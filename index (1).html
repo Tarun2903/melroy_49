@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build & Launch Your AI Digital Product in 5 Days — 1-on-1 Challenge</title>
+<meta name="description" content="A private 1-on-1 challenge where Melroy personally guides you from idea to a launched AI digital product in 5 days. No coding. No confusing tech. Just ₹99.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B1020;          /* midnight */
+  --ink-2:#141B33;        /* hero surface */
+  --paper:#F6F7FB;        /* cool light bg */
+  --card:#FFFFFF;
+  --text:#22283B;
+  --muted:#5B6478;
+  --line:#E4E7F0;
+  --blue:#4F7CFF;         /* AI electric */
+  --blue-soft:#EBF0FF;
+  --amber:#FFC53D;        /* launch amber CTA */
+  --amber-dark:#3A2A00;
+  --green:#1FA65A;
+  --radius:16px;
+  --display:"Bricolage Grotesque", "Inter", system-ui, sans-serif;
+  --body:"Inter", system-ui, -apple-system, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{font-family:var(--body);color:var(--text);background:var(--paper);line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.narrow{max-width:760px;margin:0 auto}
+section{padding:72px 0}
+@media(max-width:640px){section{padding:52px 0}}
+
+h1,h2,h3{font-family:var(--display);line-height:1.12;letter-spacing:-.01em;color:var(--ink)}
+h2{font-size:clamp(1.7rem,3.6vw,2.4rem);margin-bottom:14px}
+.kicker{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:14px}
+.center{text-align:center}
+.sub{color:var(--muted);font-size:1.05rem;max-width:640px}
+.center .sub{margin:0 auto}
+
+/* buttons */
+.btn{display:inline-block;font-family:var(--body);font-weight:700;font-size:1.02rem;text-decoration:none;text-align:center;
+  background:var(--amber);color:var(--amber-dark);padding:16px 34px;border-radius:12px;border:0;cursor:pointer;
+  box-shadow:0 6px 20px rgba(255,197,61,.35), inset 0 -3px 0 rgba(0,0,0,.12);transition:transform .15s ease, box-shadow .15s ease}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(255,197,61,.45), inset 0 -3px 0 rgba(0,0,0,.12)}
+.btn:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.btn .small{display:block;font-size:.78rem;font-weight:600;opacity:.75;margin-top:2px}
+.btn-wide{width:100%;max-width:520px}
+
+/* ===== HERO ===== */
+.hero{background:
+  radial-gradient(900px 420px at 80% -10%, rgba(79,124,255,.28), transparent 60%),
+  radial-gradient(700px 380px at 10% 110%, rgba(79,124,255,.15), transparent 60%),
+  linear-gradient(180deg, var(--ink-2), var(--ink));
+  color:#E8ECF8;padding:76px 0 64px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 75%)}
+.hero .wrap{position:relative}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(79,124,255,.16);border:1px solid rgba(79,124,255,.45);
+  color:#BFD0FF;font-size:.82rem;font-weight:600;padding:7px 14px;border-radius:999px;margin-bottom:22px}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.hero h1{color:#fff;font-size:clamp(2.1rem,5.2vw,3.4rem);font-weight:800;max-width:820px;margin-bottom:18px}
+.hero h1 .hl{color:var(--amber)}
+.hero .lede{font-size:clamp(1.02rem,2vw,1.2rem);color:#B9C2DB;max-width:640px;margin-bottom:14px}
+.hero .no-list{display:flex;flex-wrap:wrap;gap:10px 18px;margin:18px 0 30px;color:#93A0C2;font-weight:600;font-size:.95rem}
+.hero .no-list span::before{content:"✕ ";color:#FF7A7A;font-weight:800}
+.price-row{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-bottom:26px}
+.price-tag{font-family:var(--display);font-weight:800;font-size:2rem;color:#fff}
+.price-tag s{color:#7482A6;font-weight:500;font-size:1.15rem;margin-right:10px}
+.price-note{font-size:.85rem;color:#93A0C2}
+.trust-strip{display:flex;flex-wrap:wrap;gap:14px 26px;margin-top:30px;padding-top:24px;border-top:1px solid rgba(255,255,255,.1);
+  color:#AAB5D4;font-size:.9rem;font-weight:500}
+.trust-strip b{color:#fff}
+.stars{color:var(--amber);letter-spacing:2px}
+
+/* ===== OUTCOMES ===== */
+.grid{display:grid;gap:18px}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:1fr}}
+@media(max-width:560px){.grid-4,.grid-2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px;box-shadow:0 1px 2px rgba(16,20,40,.04)}
+.card .ico{width:44px;height:44px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;
+  font-size:1.3rem;margin-bottom:14px}
+.card h3{font-size:1.08rem;margin-bottom:6px}
+.card p{color:var(--muted);font-size:.94rem}
+
+/* ===== TIMELINE (signature) ===== */
+.days{position:relative;max-width:760px;margin:44px auto 0}
+.days::before{content:"";position:absolute;left:27px;top:10px;bottom:10px;width:2px;
+  background:linear-gradient(var(--blue), var(--amber))}
+.day{position:relative;padding:0 0 34px 84px}
+.day:last-child{padding-bottom:0}
+.day .node{position:absolute;left:0;top:0;width:56px;height:56px;border-radius:50%;background:var(--ink);color:#fff;
+  display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:.78rem;line-height:1.05;text-align:center;
+  border:3px solid var(--blue);box-shadow:0 0 0 6px var(--paper)}
+.day:last-child .node{border-color:var(--amber)}
+.day .box{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px}
+.day h3{font-size:1.15rem;margin-bottom:6px}
+.day p{color:var(--muted);font-size:.95rem}
+.outcome{display:inline-block;margin-top:12px;background:#EAF7EF;color:#136B3B;font-size:.82rem;font-weight:700;
+  padding:6px 12px;border-radius:999px}
+.outcome::before{content:"✔ ";}
+@media(max-width:560px){
+  .days::before{left:21px}
+  .day{padding-left:64px}
+  .day .node{width:44px;height:44px;font-size:.68rem}
+}
+
+/* ===== TESTIMONIALS ===== */
+.t-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column;gap:12px}
+.t-card .stars{font-size:.85rem}
+.t-card p{font-size:.94rem;color:var(--text)}
+.t-who{display:flex;align-items:center;gap:12px;margin-top:auto}
+.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:.9rem;flex:none}
+.t-who b{display:block;font-size:.92rem;color:var(--ink)}
+.t-who span{font-size:.8rem;color:var(--muted)}
+
+/* ===== CHECKLIST ===== */
+.check-list{display:grid;gap:14px;max-width:680px;margin:34px auto 0}
+.check{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-weight:500}
+.check .tick{flex:none;width:26px;height:26px;border-radius:8px;background:#EAF7EF;color:var(--green);display:grid;place-items:center;font-weight:800;font-size:.9rem}
+
+/* ===== INCLUDED ===== */
+.included{background:var(--ink);color:#DCE2F2;border-radius:24px;padding:52px clamp(22px,5vw,56px)}
+.included h2{color:#fff}
+.included .sub{color:#9FA9C6}
+.inc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 28px;margin:30px 0 34px}
+@media(max-width:640px){.inc-grid{grid-template-columns:1fr}}
+.inc{display:flex;gap:12px;align-items:flex-start;font-weight:500}
+.inc .tick{color:var(--amber);font-weight:800}
+.included .cta-line{border-top:1px solid rgba(255,255,255,.12);padding-top:30px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between}
+.included .price-tag{font-size:1.7rem}
+
+/* ===== TRAINER ===== */
+.trainer{display:grid;grid-template-columns:280px 1fr;gap:40px;align-items:center}
+@media(max-width:760px){.trainer{grid-template-columns:1fr}}
+.photo-ph{aspect-ratio:4/5;border-radius:20px;background:linear-gradient(160deg,var(--blue-soft),#D7E2FF 55%,var(--paper));
+  border:1px dashed #B9C8F5;display:grid;place-items:center;color:#7A8BC0;font-weight:600;font-size:.9rem;text-align:center;padding:20px}
+.trainer p{color:var(--muted);margin-bottom:12px}
+
+/* ===== GUARANTEE ===== */
+.guarantee{background:linear-gradient(160deg,#FFF8E6,#FFF);border:2px solid var(--amber);border-radius:24px;
+  padding:44px clamp(22px,5vw,52px);display:grid;grid-template-columns:110px 1fr;gap:30px;align-items:center}
+@media(max-width:640px){.guarantee{grid-template-columns:1fr;text-align:center;justify-items:center}}
+.seal{width:110px;height:110px;border-radius:50%;background:var(--amber);color:var(--amber-dark);display:grid;place-items:center;
+  font-family:var(--display);font-weight:800;text-align:center;font-size:.82rem;line-height:1.2;box-shadow:0 8px 24px rgba(255,197,61,.5)}
+.guarantee h2{font-size:1.6rem}
+.guarantee p{color:var(--muted)}
+
+/* ===== FAQ ===== */
+.faq{max-width:720px;margin:34px auto 0}
+.faq details{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.faq summary{cursor:pointer;list-style:none;padding:18px 20px;font-weight:600;color:var(--ink);display:flex;justify-content:space-between;gap:16px;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-family:var(--display);font-weight:700;font-size:1.3rem;color:var(--blue);transition:transform .2s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq .a{padding:0 20px 18px;color:var(--muted);font-size:.95rem}
+
+/* ===== FINAL CTA ===== */
+.final{background:
+  radial-gradient(700px 360px at 50% -20%, rgba(255,197,61,.18), transparent 60%),
+  linear-gradient(180deg,var(--ink-2),var(--ink));
+  color:#E8ECF8;text-align:center;border-radius:0}
+.final h2{color:#fff;font-size:clamp(1.8rem,4vw,2.6rem)}
+.final .sub{color:#A6B0CE;margin:14px auto 8px}
+.spots{display:inline-block;background:rgba(255,122,122,.14);border:1px solid rgba(255,122,122,.5);color:#FFB4B4;
+  font-size:.85rem;font-weight:700;padding:7px 16px;border-radius:999px;margin:18px 0 26px}
+
+footer{padding:34px 20px 110px;text-align:center;color:var(--muted);font-size:.82rem}
+
+/* ===== STICKY MOBILE BAR ===== */
+.buybar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(11,16,32,.92);backdrop-filter:blur(10px);
+  border-top:1px solid rgba(255,255,255,.12);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  transform:translateY(110%);transition:transform .3s ease}
+.buybar.show{transform:translateY(0)}
+.buybar .p{color:#fff;font-family:var(--display);font-weight:800;font-size:1.2rem;line-height:1.1}
+.buybar .p s{color:#7482A6;font-size:.85rem;font-weight:500;display:block}
+.buybar .btn{padding:12px 22px;font-size:.95rem;box-shadow:none}
+@media(min-width:900px){.buybar{max-width:420px;left:auto;right:24px;bottom:24px;border-radius:16px;border:1px solid rgba(255,255,255,.15)}}
+</style>
+</head>
+<body>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="wrap">
+    <span class="badge"><span class="dot"></span>Private 1-on-1 · Limited spots per intake</span>
+    <h1>Build & Launch Your <span class="hl">AI Digital Product</span> in Just 5 Days</h1>
+    <p class="lede">A private 1-on-1 challenge where I'll personally guide you from idea to launch — one focused session a day, and you build alongside me.</p>
+    <div class="no-list">
+      <span>No coding</span><span>No confusing tech</span><span>No endless tutorials</span>
+    </div>
+    <div class="price-row">
+      <div class="price-tag"><s>₹1,999</s>₹99</div>
+      <div class="price-note">One-time · Money-back guarantee</div>
+    </div>
+    <a class="btn cta" href="#">Reserve My Spot for ₹99<span class="small">Instant confirmation · Secure payment via Razorpay</span></a>
+    <div class="trust-strip">
+      <span class="stars">★★★★★ <b style="color:#fff">4.9</b>&nbsp;from past participants</span>
+      <span><b>1-on-1</b> — never a group webinar</span>
+      <span><b>100%</b> money-back guarantee</span>
+    </div>
+  </div>
+</header>
+
+<!-- ================= OUTCOMES ================= -->
+<section>
+  <div class="wrap center">
+    <span class="kicker">What you'll walk away with</span>
+    <h2>In 5 days, you don't learn about it.<br>You'll have built it.</h2>
+    <p class="sub">By the end of this challenge, all four of these exist — live, working, and yours.</p>
+    <div class="grid grid-4" style="margin-top:38px;text-align:left">
+      <div class="card"><div class="ico">🧩</div><h3>A completed AI-powered digital product</h3><p>Built with AI, ready to sell — not a half-finished draft.</p></div>
+      <div class="card"><div class="ico">🌐</div><h3>A professional online presence</h3><p>A clean brand and page that makes people trust you.</p></div>
+      <div class="card"><div class="ico">📈</div><h3>A simple sales funnel</h3><p>A clear path from stranger → buyer, set up and working.</p></div>
+      <div class="card"><div class="ico">🗺️</div><h3>A clear launch plan</h3><p>A repeatable framework you can keep using after Day 5.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 5-DAY ROADMAP ================= -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="center">
+      <span class="kicker">Your 5-day roadmap</span>
+      <h2>One focused build per day. Five days to launch.</h2>
+      <p class="sub">Every day ends with something real. No fluff sessions, no theory marathons.</p>
+    </div>
+    <div class="days">
+      <div class="day"><div class="node">DAY<br>1</div><div class="box">
+        <h3>⚡ Find Your Product Idea</h3>
+        <p>Discover a product idea with real potential and create a clear plan for what you'll build.</p>
+        <span class="outcome">A validated product concept</span>
+      </div></div>
+      <div class="day"><div class="node">DAY<br>2</div><div class="box">
+        <h3>🤖 Build Your Product With AI</h3>
+        <p>Use AI to create your digital product with a practical, step-by-step workflow.</p>
+        <span class="outcome">Your first version is complete</span>
+      </div></div>
+      <div class="day"><div class="node">DAY<br>3</div><div class="box">
+        <h3>🌐 Build Your Brand & Online Presence</h3>
+        <p>Set up your brand, create a professional-looking online presence, and prepare your product for launch.</p>
+        <span class="outcome">Your business is ready to be seen</span>
+      </div></div>
+      <div class="day"><div class="node">DAY<br>4</div><div class="box">
+        <h3>🚀 Build Your Sales System</h3>
+        <p>Create a simple funnel so people can learn about your product and access it easily.</p>
+        <span class="outcome">Your sales system is ready</span>
+      </div></div>
+      <div class="day"><div class="node">DAY<br>5</div><div class="box">
+        <h3>🔥 Launch With Confidence</h3>
+        <p>Launch your product and leave with a practical action plan for your next steps.</p>
+        <span class="outcome">A live product + a repeatable framework</span>
+      </div></div>
+    </div>
+    <div class="center" style="margin-top:40px">
+      <a class="btn cta" href="#">Start My 5-Day Build — ₹99</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIALS ================= -->
+<section style="background:#EEF1F8">
+  <div class="wrap">
+    <div class="center">
+      <span class="kicker">Results from past participants</span>
+      <h2>People who stopped watching tutorials — and shipped</h2>
+    </div>
+    <div class="grid grid-3" style="margin-top:38px">
+      <div class="t-card">
+        <span class="stars">★★★★★</span>
+        <p>"I'd been 'planning' a digital product for two years. In 5 days with Melroy I actually launched an AI-built resume toolkit — and made my first sale within a week."</p>
+        <div class="t-who"><span class="avatar" style="background:#4F7CFF">PR</span><div><b>Priya R.</b><span>HR Professional, Bengaluru</span></div></div>
+      </div>
+      <div class="t-card">
+        <span class="stars">★★★★★</span>
+        <p>"I'm not technical at all. The 1-on-1 format is what made the difference — every time I got stuck, we fixed it live on the call instead of me giving up."</p>
+        <div class="t-who"><span class="avatar" style="background:#1FA65A">AS</span><div><b>Arjun S.</b><span>Sales Manager, Pune</span></div></div>
+      </div>
+      <div class="t-card">
+        <span class="stars">★★★★★</span>
+        <p>"The best ₹99 I've spent. I launched a mini-course with AI-generated workbooks. The funnel template alone was worth 10x the price."</p>
+        <div class="t-who"><span class="avatar" style="background:#E86A4A">MK</span><div><b>Meera K.</b><span>Freelance Designer, Kochi</span></div></div>
+      </div>
+      <div class="t-card">
+        <span class="stars">★★★★★</span>
+        <p>"Day 3 changed how I see my side hustle. Having a real brand page made me take myself seriously — and so did my first customers."</p>
+        <div class="t-who"><span class="avatar" style="background:#7A5CFF">RV</span><div><b>Rahul V.</b><span>Software Engineer, Hyderabad</span></div></div>
+      </div>
+      <div class="t-card">
+        <span class="stars">★★★★★</span>
+        <p>"I've bought big courses before and finished none of them. This is the opposite: 5 days, one clear task a day, and someone personally keeping you accountable."</p>
+        <div class="t-who"><span class="avatar" style="background:#0FA3B1">SN</span><div><b>Sneha N.</b><span>Homemaker turned creator, Chennai</span></div></div>
+      </div>
+      <div class="t-card">
+        <span class="stars">★★★★★</span>
+        <p>"Launched my first paid Notion template pack on Day 5. The launch checklist meant zero guesswork — I just followed it step by step."</p>
+        <div class="t-who"><span class="avatar" style="background:#C2417F">VD</span><div><b>Vikram D.</b><span>MBA Student, Mumbai</span></div></div>
+      </div>
+    </div>
+    <p class="center" style="margin-top:18px;font-size:.78rem;color:var(--muted)">Sample testimonials for demonstration.</p>
+  </div>
+</section>
+
+<!-- ================= IS THIS FOR YOU ================= -->
+<section>
+  <div class="wrap center">
+    <span class="kicker">Is this challenge right for you?</span>
+    <h2>This works if you check even one box</h2>
+    <div class="check-list" style="text-align:left">
+      <div class="check"><span class="tick">✔</span>You want to create a digital product with AI — without learning to code.</div>
+      <div class="check"><span class="tick">✔</span>You prefer learning by building, not by watching hours of videos.</div>
+      <div class="check"><span class="tick">✔</span>You want personal guidance throughout the process, not a group webinar.</div>
+      <div class="check"><span class="tick">✔</span>You're ready to take action instead of endlessly consuming content.</div>
+    </div>
+    <div style="margin-top:34px">
+      <a class="btn cta" href="#">Yes, That's Me — Reserve My Spot</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WHAT'S INCLUDED ================= -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="included">
+      <span class="kicker" style="color:var(--amber)">Everything included for ₹99</span>
+      <h2>Your complete build-and-launch stack</h2>
+      <p class="sub">Not just calls — the exact assets and frameworks so you never wonder "what do I do next?"</p>
+      <div class="inc-grid">
+        <div class="inc"><span class="tick">✔</span>Five private 1-on-1 coaching sessions</div>
+        <div class="inc"><span class="tick">✔</span>Step-by-step implementation (we build together)</div>
+        <div class="inc"><span class="tick">✔</span>AI prompts & templates library</div>
+        <div class="inc"><span class="tick">✔</span>Product creation framework</div>
+        <div class="inc"><span class="tick">✔</span>Sales funnel template</div>
+        <div class="inc"><span class="tick">✔</span>Launch checklist</div>
+        <div class="inc"><span class="tick">✔</span>Support throughout the challenge</div>
+        <div class="inc"><span class="tick">✔</span>A repeatable framework for every future product</div>
+      </div>
+      <div class="cta-line">
+        <div class="price-tag" style="color:#fff"><s>₹1,999</s>₹99 <span style="font-size:.85rem;font-weight:500;color:#9FA9C6">one-time</span></div>
+        <a class="btn cta" href="#">Get Everything for ₹99</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DIFFERENT ================= -->
+<section style="padding-top:0">
+  <div class="wrap center narrow">
+    <span class="kicker">Why this is different</span>
+    <h2>Most programs teach concepts.<br>This one ships a product.</h2>
+    <p class="sub" style="margin-top:10px">Courses hand you information and leave you alone with it. This challenge is designed to help you build something real — with personal guidance every step of the way. You're never stuck, because I'm on the call with you.</p>
+  </div>
+</section>
+
+<!-- ================= TRAINER ================= -->
+<section style="background:#EEF1F8">
+  <div class="wrap">
+    <div class="trainer">
+      <div class="photo-ph">Melroy's photo<br>(coming soon)</div>
+      <div>
+        <span class="kicker">Meet your coach</span>
+        <h2>Hi, I'm Melroy 👋</h2>
+        <p>I help everyday professionals and creators turn ideas into launched AI-powered digital products — without code, tech overwhelm, or months of "getting ready."</p>
+        <p>After building and launching multiple digital products myself using AI tools, I turned the exact process into a 5-day system anyone can follow. I've guided students, working professionals, freelancers, and first-time founders from a blank page to a live product — in less time than most people spend choosing a course.</p>
+        <p>This challenge is 1-on-1 by design: your idea, your pace, my full attention.</p>
+        <p style="font-size:.8rem;color:#9AA3B8">(Placeholder bio — final version coming.)</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GUARANTEE ================= -->
+<section>
+  <div class="wrap">
+    <div class="guarantee">
+      <div class="seal">100%<br>MONEY<br>BACK</div>
+      <div>
+        <h2>Try Day 1. If it's not for you, get every rupee back.</h2>
+        <p>Attend your first session, and if you don't feel this challenge will get you to a launched product, just say the word — I'll refund your ₹99 in full. No forms, no friction, no hard feelings.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="center">
+      <span class="kicker">Questions, answered</span>
+      <h2>Frequently asked questions</h2>
+    </div>
+    <div class="faq">
+      <details open><summary>Do I need any coding or technical skills?</summary><div class="a">None. Every step uses AI tools with simple, guided workflows. If you can use WhatsApp and a browser, you can do this.</div></details>
+      <details><summary>How do the 1-on-1 sessions work?</summary><div class="a">You get five private video calls — one per day — scheduled at times that work for you. We build together live, so you're never stuck between sessions.</div></details>
+      <details><summary>How much time do I need each day?</summary><div class="a">Plan for your session plus about 60–90 minutes of guided implementation. Everything is broken into small, clear tasks.</div></details>
+      <details><summary>What kind of product will I build?</summary><div class="a">That's Day 1's job — we'll find the idea that fits your skills and audience. Common builds: e-books, templates, mini-courses, toolkits, guides, and AI-assisted services.</div></details>
+      <details><summary>I don't have a product idea yet. Is that okay?</summary><div class="a">Perfect, actually. The challenge starts from zero — Day 1 is entirely about finding and validating your idea.</div></details>
+      <details><summary>What if it doesn't work for me?</summary><div class="a">You're covered by the money-back guarantee: attend Day 1, and if it's not right for you, you get a full refund of your ₹99.</div></details>
+      <details><summary>When does my challenge start?</summary><div class="a">As soon as you reserve your spot, you'll receive a link to schedule your Day 1 session. Spots per intake are limited to keep the coaching truly 1-on-1.</div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="final">
+  <div class="wrap">
+    <h2>In 5 days, you could still be "planning."<br>Or you could be launched.</h2>
+    <p class="sub">Reserve your spot in the 5-Day 1-on-1 AI Digital Product Challenge.</p>
+    <div class="spots">⚠ Only a limited number of 1-on-1 spots per intake</div>
+    <div>
+      <a class="btn btn-wide cta" href="#">Reserve My Spot Now — ₹99<span class="small">Backed by the 100% money-back guarantee</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © 2026 Melroy · All rights reserved · Payments secured by Razorpay
+</footer>
+
+<!-- ================= STICKY BUY BAR ================= -->
+<div class="buybar" id="buybar" aria-hidden="true">
+  <div class="p"><s>₹1,999</s>₹99 · 5-Day Challenge</div>
+  <a class="btn cta" href="#">Reserve Spot</a>
+</div>
+
+<script>
+/* ===== CONFIG — swap this with your Razorpay payment link ===== */
+const PAYMENT_LINK = "https://rzp.io/l/YOUR-PAYMENT-LINK";
+
+document.querySelectorAll(".cta").forEach(a => { a.href = PAYMENT_LINK; });
+
+/* Sticky buy bar appears after scrolling past the hero */
+const bar = document.getElementById("buybar");
+const hero = document.querySelector(".hero");
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver(([e]) => {
+    bar.classList.toggle("show", !e.isIntersecting);
+    bar.setAttribute("aria-hidden", e.isIntersecting);
+  }, {threshold: 0}).observe(hero);
+}
+</script>
+</body>
+</html>
