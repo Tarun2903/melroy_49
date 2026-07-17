@@ -1,5 +1,6 @@
 /* =========================================================
    Melroy — 5-Day AI Digital Product Challenge
+   Global stylesheet, imported once in app/layout.tsx.
    Table of contents:
    1. Design tokens (spacing / type / radius / color)
    2. Reset & base
@@ -39,8 +40,8 @@
   --green:#1FA65A;
   --case-bg:#111319;      /* dark case-study card surface */
   --case-red:#FF4D4D;     /* case-study accent (RESULT tag / border) */
-  --display:"Bricolage Grotesque", "Inter", system-ui, sans-serif;
-  --body:"Inter", system-ui, -apple-system, sans-serif;
+  --display:var(--font-display), system-ui, sans-serif;
+  --body:var(--font-body), system-ui, -apple-system, sans-serif;
 
   /* 8pt spacing scale (4px sub-steps) */
   --sp-1:4px;   --sp-2:8px;   --sp-3:12px;  --sp-4:16px;
@@ -298,9 +299,9 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .case-headline{color:#fff;font-size:1.2rem;font-weight:800;margin-bottom:var(--sp-2)}
 .case-client{color:#fff;font-weight:700;font-size:.95rem}
 .case-business{color:#9099B5;font-size:.82rem;margin-bottom:var(--sp-5)}
-.case-shot{margin-top:auto;background:#fff;border-radius:var(--radius-md);padding:var(--sp-6);
+.case-shot{position:relative;margin-top:auto;background:#fff;border-radius:var(--radius-md);padding:var(--sp-6);
   aspect-ratio:16/10;overflow:hidden}
-.case-shot-img{width:100%;height:100%;display:block;object-fit:contain;object-position:center}
+.case-shot-img{object-fit:contain;object-position:center}
 
 /* ---------- 11. Checklist ---------- */
 .check-list{display:grid;gap:var(--sp-4);max-width:680px;margin:var(--sp-9) auto 0}
