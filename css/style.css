@@ -10,7 +10,7 @@
    7. Hero + hero visual
    8. Outcomes grid
    9. Timeline (5-day roadmap)
-   10. Testimonials
+   10. Results / case studies
    11. Checklist ("is this for you")
    12. Included stack
    13. Guarantee
@@ -18,6 +18,7 @@
    15. Final CTA + footer
    16. Sticky mobile buy bar
    17. Scroll-reveal animations & counters
+   18. Lead capture modal
    ========================================================= */
 
 /* ---------- 1. Design tokens ---------- */
@@ -36,6 +37,8 @@
   --amber-light:#FFDD85;
   --amber-dark:#3A2A00;
   --green:#1FA65A;
+  --case-bg:#111319;      /* dark case-study card surface */
+  --case-red:#FF4D4D;     /* case-study accent (RESULT tag / border) */
   --display:"Bricolage Grotesque", "Inter", system-ui, sans-serif;
   --body:"Inter", system-ui, -apple-system, sans-serif;
 
@@ -97,14 +100,10 @@ h3{font-size:var(--fs-h3)}
 /* ---------- 3. Layout helpers ---------- */
 .grid{display:grid;gap:var(--sp-5)}
 .grid-4{grid-template-columns:repeat(4,1fr)}
-.grid-2{grid-template-columns:repeat(2,1fr)}
-.grid-3{grid-template-columns:repeat(3,1fr)}
 @media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:900px) and (min-width:641px){.grid-3{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:640px){.grid-4,.grid-2,.grid-3{grid-template-columns:1fr}}
+@media(max-width:640px){.grid-4{grid-template-columns:1fr}}
 
 .outcomes-grid{margin-top:var(--sp-10);text-align:left}
-.results-grid{margin-top:var(--sp-10)}
 .demo-note{margin-top:var(--sp-4);font-size:var(--fs-xs);color:var(--muted)}
 .roadmap-cta,.fit-cta{margin-top:var(--sp-9);text-align:center}
 .different-lede{margin-top:var(--sp-3)}
@@ -285,35 +284,23 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
   .day .node{width:44px;height:44px;font-size:.7rem}
 }
 
-/* ---------- 10. Testimonials ---------- */
-.t-card{position:relative;overflow:hidden;background:linear-gradient(180deg,#FFFFFF,#FAFBFF);border:1px solid var(--line);
-  border-radius:var(--radius-md);padding:var(--sp-6);display:flex;flex-direction:column;gap:var(--sp-3);
-  transition:transform .25s ease, box-shadow .25s ease}
-.t-card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--blue),var(--amber));
-  transform:scaleX(0);transform-origin:left;transition:transform .3s ease}
-.t-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
-.t-card:hover::before{transform:scaleX(1)}
-.t-card .stars{font-size:.85rem}
-.t-card blockquote{font-size:var(--fs-sm);color:var(--text)}
-.t-who{display:flex;align-items:center;gap:var(--sp-3);margin-top:auto}
-.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:.9rem;flex:none}
-.avatar--blue{background:#4F7CFF}
-.avatar--green{background:#1FA65A}
-.avatar--orange{background:#E86A4A}
-.avatar--purple{background:#7A5CFF}
-.avatar--teal{background:#0FA3B1}
-.avatar--pink{background:#C2417F}
-.t-who b{display:block;font-size:.92rem;color:var(--ink);font-style:normal}
-.t-who span{font-size:.8rem;color:var(--muted)}
+/* ---------- 10. Results / case studies ---------- */
+.case-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-6);margin-top:var(--sp-10);align-items:stretch}
+@media(max-width:640px){.case-grid{grid-template-columns:1fr}}
 
-.t-card--placeholder{align-items:stretch}
-.t-card--placeholder .demo-note{margin-top:0;text-align:left}
-.t-media{width:100%;aspect-ratio:16/10;border-radius:var(--radius-sm);
-  background:linear-gradient(160deg,var(--blue-soft),#D7E2FF 55%,var(--paper));border:1px dashed #B9C8F5;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-2);
-  color:#7A8BC0;font-weight:600;font-size:.82rem;text-align:center;padding:var(--sp-4)}
-.t-media .play{width:44px;height:44px;border-radius:50%;background:rgba(79,124,255,.15);display:grid;place-items:center;
-  font-size:1.1rem;color:var(--blue)}
+.case-card{position:relative;display:flex;flex-direction:column;height:100%;
+  background:var(--case-bg);border:1px solid rgba(255,77,77,.35);border-radius:var(--radius-lg);
+  padding:var(--sp-6);box-shadow:var(--shadow-lg);
+  transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease}
+.case-card:hover{transform:translateY(-6px);box-shadow:0 20px 44px rgba(0,0,0,.32);border-color:var(--case-red)}
+.case-tag{align-self:flex-start;background:var(--case-red);color:#fff;font-size:.7rem;font-weight:800;
+  letter-spacing:.08em;text-transform:uppercase;padding:4px var(--sp-3);border-radius:999px;margin-bottom:var(--sp-4)}
+.case-headline{color:#fff;font-size:1.2rem;font-weight:800;margin-bottom:var(--sp-2)}
+.case-client{color:#fff;font-weight:700;font-size:.95rem}
+.case-business{color:#9099B5;font-size:.82rem;margin-bottom:var(--sp-5)}
+.case-shot{margin-top:auto;background:#fff;border-radius:var(--radius-md);padding:var(--sp-6);
+  aspect-ratio:16/10;overflow:hidden}
+.case-shot-img{width:100%;height:100%;display:block;object-fit:contain;object-position:center}
 
 /* ---------- 11. Checklist ---------- */
 .check-list{display:grid;gap:var(--sp-4);max-width:680px;margin:var(--sp-9) auto 0}
@@ -406,4 +393,28 @@ footer.site-footer a{color:var(--muted);text-decoration:underline}
 
 @media (prefers-reduced-motion:reduce){
   .reveal,.reveal-group > *{opacity:1;transform:none;transition:none}
+}
+
+/* ---------- 18. Lead capture modal ---------- */
+.lead-modal{border:0;border-radius:var(--radius-lg);padding:0;width:min(92vw,440px);
+  max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);margin:auto}
+.lead-modal::backdrop{background:rgba(11,16,32,.72);backdrop-filter:blur(4px)}
+.lead-form{position:relative;padding:var(--sp-8) var(--sp-7) var(--sp-7)}
+.lead-close{position:absolute;top:var(--sp-4);right:var(--sp-4);width:36px;height:36px;border:0;
+  background:var(--paper);color:var(--muted);border-radius:50%;font-size:1.3rem;line-height:1;
+  cursor:pointer;display:grid;place-items:center;transition:background .15s ease, color .15s ease}
+.lead-close:hover{background:var(--blue-soft);color:var(--blue)}
+.lead-title{font-size:1.4rem;margin-bottom:var(--sp-2);padding-right:var(--sp-8)}
+.lead-sub{color:var(--muted);font-size:var(--fs-sm);margin-bottom:var(--sp-6)}
+.lead-field{display:flex;flex-direction:column;gap:var(--sp-2);margin-bottom:var(--sp-5);font-weight:600;font-size:.88rem;color:var(--ink)}
+.lead-field input{font:inherit;font-weight:400;font-size:1rem;padding:var(--sp-3) var(--sp-4);
+  border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--card);color:var(--text);
+  transition:border-color .15s ease, box-shadow .15s ease}
+.lead-field input:focus-visible{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.lead-field input:invalid:not(:placeholder-shown){border-color:#FF7A7A}
+.lead-submit{width:100%;margin-top:var(--sp-2)}
+.lead-note{margin-top:var(--sp-5);color:var(--muted);font-size:.76rem;text-align:center}
+
+@media(max-width:480px){
+  .lead-form{padding:var(--sp-7) var(--sp-5) var(--sp-6)}
 }

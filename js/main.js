@@ -12,8 +12,82 @@
   var PAYMENT_LINK = "https://rzp.io/l/YOUR-PAYMENT-LINK";
 
   document.querySelectorAll(".cta").forEach(function (a) {
-    a.href = PAYMENT_LINK;
+    a.href = PAYMENT_LINK; /* fallback href if JS/the dialog fails to load */
   });
+
+  /* ===== Lead capture modal =====
+     Every .cta button opens this form instead of navigating straight to
+     Razorpay. On submit, the lead is saved (see saveLead below — currently a
+     placeholder, TODO: replace with a real Supabase insert once the project
+     is connected) and only then does the visitor get sent to PAYMENT_LINK. */
+  (function initLeadCapture() {
+    var modal = document.getElementById("leadModal");
+    var form = document.getElementById("leadForm");
+    var closeBtn = document.getElementById("leadClose");
+    var ctaButtons = document.querySelectorAll(".cta");
+    if (!modal || !form || !closeBtn || !ctaButtons.length || typeof modal.showModal !== "function") {
+      return; /* unsupported browser: let the plain href fallback above handle it */
+    }
+
+    var lastFocused = null;
+    var pendingSource = "";
+
+    function saveLead(data) {
+      /* TODO: replace this block with a real Supabase insert, e.g.:
+         const { error } = await supabase.from("leads").insert([data]); */
+      try {
+        var existing = JSON.parse(localStorage.getItem("melroy_leads") || "[]");
+        existing.push(data);
+        localStorage.setItem("melroy_leads", JSON.stringify(existing));
+      } catch (e) {
+        /* localStorage unavailable (private mode, quota, etc.) — non-fatal */
+      }
+      console.log("Lead captured (placeholder — wire to Supabase):", data);
+    }
+
+    function openModal(sourceLabel) {
+      pendingSource = sourceLabel;
+      lastFocused = document.activeElement;
+      form.reset();
+      modal.showModal();
+      var firstField = document.getElementById("leadName");
+      if (firstField) firstField.focus();
+    }
+
+    ctaButtons.forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        openModal(btn.textContent.trim());
+      });
+    });
+
+    closeBtn.addEventListener("click", function () {
+      modal.close();
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+
+      var leadData = {
+        name: document.getElementById("leadName").value.trim(),
+        phone: document.getElementById("leadPhone").value.trim(),
+        email: document.getElementById("leadEmail").value.trim(),
+        source: pendingSource,
+        page: window.location.href,
+        submittedAt: new Date().toISOString()
+      };
+
+      saveLead(leadData);
+      modal.close();
+      window.location.href = PAYMENT_LINK;
+    });
+
+    /* Native <dialog> already closes on Escape/backdrop; just reset focus. */
+    modal.addEventListener("close", function () {
+      if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+    });
+  })();
 
   /* Footer year */
   var yearEl = document.getElementById("year");

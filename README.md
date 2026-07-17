@@ -14,7 +14,8 @@ Landing page for a private 1-on-1 challenge. Static site, no build step required
 │                           scroll-reveal, animated counters
 ├── images/
 │   ├── favicon.svg         Site icon (SVG, used for favicon + manifest)
-│   └── og-image.svg        Social share image source (see note below)
+│   ├── og-image.svg        Social share image source (see note below)
+│   └── result-1.jpg…4.jpg  Client photos for the Results section case-study cards
 ├── fonts/
 │   └── README.md           Notes on the current Google Fonts setup + how to self-host
 ├── robots.txt
@@ -27,17 +28,28 @@ Landing page for a private 1-on-1 challenge. Static site, no build step required
 
 1. **Payment link** — open `js/main.js` and replace `PAYMENT_LINK` with your real
    Razorpay (or other) checkout link.
-2. **Domain** — `index.html`, `robots.txt`, and `sitemap.xml` use the placeholder
+2. **Lead capture → Supabase** — every `.cta` button now opens a modal
+   (`#leadModal` in `index.html`) asking for name, phone, and email before
+   sending the visitor to `PAYMENT_LINK`. Right now `saveLead()` in
+   `js/main.js` just writes to `localStorage` (`melroy_leads`) and
+   `console.log`s the entry — there's a `// TODO` at that exact spot marking
+   where to swap in a real `supabase.from("leads").insert([data])` call once
+   the project is connected. Until then, submissions aren't going anywhere
+   permanent or visible to you except that browser's local storage.
+3. **Domain** — `index.html`, `robots.txt`, and `sitemap.xml` use the placeholder
    domain `https://melroy.dev/`. Replace it with your real domain everywhere.
-3. **Social image** — `images/og-image.svg` is an SVG source. Facebook/LinkedIn and
+4. **Social image** — `images/og-image.svg` is an SVG source. Facebook/LinkedIn and
    some Twitter clients don't render SVG for link previews reliably, so export it
    to a 1200×630 PNG/JPG (e.g. open in a browser and screenshot, or run it through
    any SVG-to-PNG converter) and update the `og:image` / `twitter:image` meta tags
    in `index.html` to point at the PNG.
-4. **Testimonials** — currently sample/demo content (flagged as such on the page),
-   including two placeholder cards (screenshot + video format) at the end of the
-   grid showing where real media testimonials can go. Replace all of it with real
-   participant testimonials before launch, and remove the demo notes.
+5. **Results / case studies** — the "Results" section is a 2×2 grid of dark
+   case-study cards (`.case-card` in `css/style.css`): David Birtwistle, Satyam,
+   Jatin Naren, and Jordan Lee, each with their stated result, business/niche,
+   and photo (`images/result-1.jpg`…`result-4.jpg`). Per Tarun: these are real,
+   verified clients who gave permission to be featured. A testimonial video is
+   planned as a future addition — there's no dedicated slot for it yet, so add
+   one when it's ready (e.g. an embedded player alongside or below this grid).
 
 ## Status vs. the Jul 2026 meeting notes
 
@@ -49,8 +61,12 @@ Done on the static site (no external accounts needed):
   and **Full Access to Meeting Recordings & Notes (+₹19)** — as checkboxes with
   a live-updating total. This is display-only: the total isn't yet passed to a
   real charge (see below).
-- Testimonials section restructured to support text / screenshot / video
-  formats, with two placeholder cards for the new formats.
+- Results section redesigned as a 2×2 dark case-study card grid (RESULT tag,
+  headline, client, business, photo) per the agreed spec, populated with the
+  four real client results and photos — see "Results / case studies" above.
+- Every `.cta` button now opens a lead-capture modal (name/phone/email) before
+  redirecting to Razorpay — see "Lead capture → Supabase" above for the exact
+  TODO spot where the real Supabase insert goes.
 
 Deliberately **not** done yet — flagged rather than guessed at, since these need
 information or judgment calls only you can make:
