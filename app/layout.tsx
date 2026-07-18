@@ -30,7 +30,6 @@ export const metadata: Metadata = {
     icon: "/images/favicon.svg",
     apple: "/images/favicon.svg",
   },
-  manifest: "/manifest.webmanifest",
   openGraph: {
     type: "website",
     url: SITE_URL,

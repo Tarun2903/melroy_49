@@ -33,7 +33,6 @@ fine with those two integrations in their placeholder state.
 │   │                       from the original style.css, unchanged behavior)
 │   ├── robots.ts           Typed robots.txt generator
 │   ├── sitemap.ts          Typed sitemap.xml generator
-│   ├── manifest.ts         Typed web app manifest generator
 │   ├── thank-you/page.tsx  The one Thank You page — see ThankYouContent below
 │   └── api/
 │       ├── leads/route.ts                    POST — validates + saves a lead
@@ -348,3 +347,12 @@ information or credentials only you have:
   Manager (a ₹49 sale would show as a $49 sale, ~4,000% overstated). The
   implementation uses `CURRENCY = "INR"` from `lib/constants.ts` and the
   actual amount Razorpay confirms was charged, not a hardcoded number.
+- **No web app manifest, deliberately.** `app/manifest.ts` existed briefly
+  (added along with `robots.ts`/`sitemap.ts` as a matched set of Next.js
+  metadata-file conventions) but was removed: a manifest with `icons` +
+  `display: "standalone"` is exactly what makes Chrome on Android treat a
+  site as installable and show the "Install App" prompt, which isn't wanted
+  for a plain marketing page. There's no service worker or install-prompt
+  code anywhere in the project either, so nothing else needed to change —
+  the favicon (`<link rel="icon">` in `app/layout.tsx`'s `metadata.icons`)
+  is unrelated to the manifest and still works normally.
