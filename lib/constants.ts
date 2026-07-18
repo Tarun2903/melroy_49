@@ -58,7 +58,7 @@ export const ORDER_BUMPS: OrderBump[] = [
       "Checkout Pages",
       "Pricing Sections",
     ],
-    price: 90,
+    price: 99,
   },
   {
     id: "session-recording",
@@ -66,7 +66,7 @@ export const ORDER_BUMPS: OrderBump[] = [
     intro:
       "Get lifetime access to the complete 5-Day Challenge recordings so you can revisit every session anytime at your own pace.",
     bullets: [],
-    price: 190,
+    price: 99,
   },
 ];
 

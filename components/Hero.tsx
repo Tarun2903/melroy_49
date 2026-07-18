@@ -1,7 +1,7 @@
 import CtaButton from "./CtaButton";
 import AnimatedCounter from "./AnimatedCounter";
 import HeroVisual from "./HeroVisual";
-import { BASE_PRICE, ORIGINAL_PRICE } from "@/lib/constants";
+import { BASE_PRICE } from "@/lib/constants";
 
 export default function Hero() {
   return (
@@ -26,17 +26,12 @@ export default function Hero() {
               <li>No confusing tech</li>
               <li>No endless tutorials</li>
             </ul>
-            <div className="price-row">
-              <p className="price-tag">
-                <s>₹{ORIGINAL_PRICE.toLocaleString("en-IN")}</s>₹{BASE_PRICE}
-              </p>
-            </div>
             <CtaButton label={`Reserve My Spot for ₹${BASE_PRICE}`} />
             <p className="hero-cta-note">Instant confirmation • Secured by Razorpay</p>
             <ul className="trust-strip">
               <li>
                 <span className="stars" aria-hidden="true">
-                  ★★★★★
+                  ★
                 </span>{" "}
                 <b>
                   <AnimatedCounter target={4.9} decimals={1} />

@@ -205,7 +205,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .price-tag s{color:#7482A6;font-weight:500;font-size:1.15rem;margin-right:var(--sp-2)}
 .price-tag--on-dark{color:#fff}
 .price-tag__note{font-size:.85rem;font-weight:500;color:#9FA9C6}
-.hero-cta-note{text-align:center;font-size:.78rem;color:#93A0C2;margin-top:var(--sp-3)}
+.hero-cta-note{font-size:.78rem;color:#93A0C2;margin-top:var(--sp-3)}
 .trust-strip{display:flex;flex-wrap:wrap;gap:var(--sp-4) var(--sp-6);margin-top:var(--sp-7);padding-top:var(--sp-6);border-top:1px solid rgba(255,255,255,.1);
   color:#AAB5D4;font-size:.9rem;font-weight:500}
 .trust-strip b{color:#fff}
@@ -247,6 +247,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .hv-chip-3{bottom:18%;left:-34px;animation-delay:1.4s}
 .hv-chip-4{bottom:-16px;right:-14px;animation-delay:2.1s}
 @keyframes floatChip{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@media(max-width:860px){.hero{padding-top:var(--sp-7)}}
 
 /* ---------- 8. Outcomes grid ---------- */
 .card{position:relative;overflow:hidden;background:linear-gradient(180deg,#FFFFFF,#FAFBFF);border:1px solid var(--line);
@@ -370,6 +371,7 @@ footer.site-footer a{color:var(--muted);text-decoration:underline}
 .buybar .p{color:#fff;font-family:var(--display);font-weight:800;font-size:1.2rem;line-height:1.1}
 .buybar .p s{color:#7482A6;font-size:.85rem;font-weight:500;display:block}
 .buybar .btn{padding:var(--sp-3) var(--sp-6);font-size:.95rem;box-shadow:none;min-height:44px}
+.buybar .btn .label::after{content:none}
 @media(min-width:900px){.buybar{max-width:420px;left:auto;right:24px;bottom:24px;border-radius:var(--radius-md);border:1px solid rgba(255,255,255,.15)}}
 
 /* ---------- 17. Scroll-reveal animations ---------- */
