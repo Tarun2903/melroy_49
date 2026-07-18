@@ -155,7 +155,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .nav-toggle.is-active .bar:nth-child(2){opacity:0}
 .nav-toggle.is-active .bar:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
-@media(max-width:760px){
+@media(max-width:860px){
   .nav-toggle{display:flex}
   .navlinks{
     position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;
@@ -385,11 +385,11 @@ footer.site-footer a{color:var(--muted);text-decoration:underline}
   max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);margin:auto}
 .lead-modal::backdrop{background:rgba(11,16,32,.72);backdrop-filter:blur(4px)}
 .lead-form{position:relative;padding:var(--sp-8) var(--sp-7) var(--sp-7)}
-.lead-close{position:absolute;top:var(--sp-4);right:var(--sp-4);width:36px;height:36px;border:0;
+.lead-close{position:absolute;top:var(--sp-4);right:var(--sp-4);width:44px;height:44px;border:0;
   background:var(--paper);color:var(--muted);border-radius:50%;font-size:1.3rem;line-height:1;
   cursor:pointer;display:grid;place-items:center;transition:background .15s ease, color .15s ease}
 .lead-close:hover{background:var(--blue-soft);color:var(--blue)}
-.lead-title{font-size:1.4rem;margin-bottom:var(--sp-2);padding-right:var(--sp-8)}
+.lead-title{font-size:1.4rem;margin-bottom:var(--sp-2);padding-right:var(--sp-10)}
 .lead-sub{color:var(--muted);font-size:var(--fs-sm);margin-bottom:var(--sp-6)}
 .lead-field{display:flex;flex-direction:column;gap:var(--sp-2);margin-bottom:var(--sp-5);font-weight:600;font-size:.88rem;color:var(--ink)}
 .lead-field input{font:inherit;font-weight:400;font-size:1rem;padding:var(--sp-3) var(--sp-4);
@@ -420,7 +420,7 @@ footer.site-footer a{color:var(--muted);text-decoration:underline}
 }
 
 /* ---------- 19. Thank You page + WhatsApp CTA ---------- */
-.ty-page{min-height:100vh;display:flex;align-items:center;justify-content:center;
+.ty-page{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
   background:
     radial-gradient(700px 360px at 50% -10%, rgba(37,211,102,.16), transparent 60%),
     linear-gradient(180deg,var(--ink-2),var(--ink));
