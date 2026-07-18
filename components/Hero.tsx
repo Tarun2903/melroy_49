@@ -11,13 +11,16 @@ export default function Hero() {
           <div className="hero-copy">
             <span className="badge">
               <span className="dot" aria-hidden="true" />
-              Private 1-on-1 · Limited spots per intake
+              Limited Seats • Personal 1-on-1 Guidance
             </span>
             <h1>
               Build &amp; Launch Your <span className="hl">AI Digital Product</span> in Just 5
               Days
             </h1>
-            <p className="lede lede--tag">Limited Seats • Personal 1-on-1 Guidance</p>
+            <p className="lede">
+              A private 1-on-1 challenge where I&rsquo;ll personally guide you from idea to
+              launch — one focused session a day, and you build alongside me.
+            </p>
             <ul className="no-list">
               <li>No coding</li>
               <li>No confusing tech</li>

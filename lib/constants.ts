@@ -61,17 +61,11 @@ export const ORDER_BUMPS: OrderBump[] = [
     price: 90,
   },
   {
-    id: "prompt-vault",
-    name: "AI Prompt Vault",
-    intro: "300+ AI prompts for:",
-    bullets: [
-      "Sales Pages",
-      "Meta Ads",
-      "Landing Pages",
-      "Email Marketing",
-      "Content Creation",
-      "Funnels",
-    ],
+    id: "session-recording",
+    name: "Session Recording",
+    intro:
+      "Get lifetime access to the complete 5-Day Challenge recordings so you can revisit every session anytime at your own pace.",
+    bullets: [],
     price: 190,
   },
 ];
