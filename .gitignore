@@ -16,6 +16,10 @@ next-env.d.ts
 # Env
 .env
 .env*.local
+.env.razorpay
 
 # Logs
 npm-debug.log*
+
+.vercel
+.env*

@@ -40,14 +40,16 @@ export async function POST(request: NextRequest) {
     email: body.email.trim(),
     source: typeof body.source === "string" ? body.source : "",
     page: typeof body.page === "string" ? body.page : "",
-    submittedAt: new Date().toISOString(),
+    submitted_at: new Date().toISOString(),
   };
 
   const supabase = getSupabaseClient();
   if (supabase) {
-    // TODO: once getSupabaseClient() returns a real client, insert here:
-    // const { error } = await supabase.from("leads").insert([lead]);
-    // if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const { error } = await supabase.from("leads").insert([lead]);
+    if (error) {
+      console.error("Supabase insert failed:", error.message);
+      return NextResponse.json({ error: "Could not save lead" }, { status: 500 });
+    }
   } else {
     // Placeholder until Supabase is connected — at least log it server-side
     // so submissions aren't silently lost during development.

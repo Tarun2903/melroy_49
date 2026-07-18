@@ -1,0 +1,175 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import WhatsAppCta from "./WhatsAppCta";
+
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+  }
+}
+
+type Status = "checking" | "no-payment-params" | "verifying" | "confirmed" | "unverified";
+
+interface StashedLead {
+  name?: string;
+  email?: string;
+  phone?: string;
+}
+
+function readCookie(name: string): string | undefined {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
+function readStashedLead(): StashedLead {
+  try {
+    const raw = sessionStorage.getItem("melroy_last_lead");
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export default function ThankYouContent() {
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState<Status>("checking");
+
+  useEffect(() => {
+    const paymentId = searchParams.get("razorpay_payment_id");
+
+    if (!paymentId) {
+      setStatus("no-payment-params");
+      return;
+    }
+
+    const firedKey = `meta_purchase_fired_${paymentId}`;
+    if (localStorage.getItem(firedKey)) {
+      // Already confirmed + fired in this browser (e.g. page refresh) —
+      // show the confirmed state again without re-verifying or re-firing.
+      setStatus("confirmed");
+      return;
+    }
+
+    setStatus("verifying");
+
+    const lead = readStashedLead();
+    const payload = {
+      razorpay_payment_id: paymentId,
+      razorpay_payment_link_id: searchParams.get("razorpay_payment_link_id"),
+      razorpay_payment_link_reference_id: searchParams.get("razorpay_payment_link_reference_id"),
+      razorpay_payment_link_status: searchParams.get("razorpay_payment_link_status"),
+      razorpay_signature: searchParams.get("razorpay_signature"),
+      email: lead.email,
+      phone: lead.phone,
+      firstName: lead.name?.split(" ")[0],
+      fbp: readCookie("_fbp"),
+      fbc: readCookie("_fbc"),
+    };
+
+    fetch("/api/payment/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      .then((data: { verified: boolean; eventId?: string; value?: number; currency?: string }) => {
+        if (!data.verified || !data.eventId) {
+          console.warn("Payment could not be verified — Purchase event not fired.");
+          setStatus("unverified");
+          return;
+        }
+
+        // Same eventID as the server sent to Meta CAPI — this is what lets
+        // Meta deduplicate the browser + server events into one.
+        window.fbq?.(
+          "track",
+          "Purchase",
+          { value: data.value, currency: data.currency },
+          { eventID: data.eventId }
+        );
+        localStorage.setItem(firedKey, "1");
+        setStatus("confirmed");
+      })
+      .catch((err) => {
+        console.error("Payment verification request failed:", err);
+        setStatus("unverified");
+      });
+    // Intentionally runs once on mount only — searchParams are read from
+    // the URL at that point and this must not re-fire on re-renders.
+  }, [searchParams]);
+
+  // Only show the private group link when there's at least payment evidence
+  // in the URL (a real Razorpay redirect) — someone who just browsed here
+  // directly with no payment params shouldn't get the group link.
+  const hasPaymentEvidence = status === "confirmed" || status === "unverified";
+
+  if (status === "no-payment-params") {
+    return (
+      <main className="ty-page">
+        <div className="ty-card">
+          <div className="ty-icon" aria-hidden="true">
+            ✔
+          </div>
+          <h1>Looking for your confirmation?</h1>
+          <p className="sub">
+            We didn&rsquo;t find a payment reference on this page. If you&rsquo;ve just completed
+            checkout, check your email for your receipt — it includes everything you need. If
+            you haven&rsquo;t reserved your spot yet, head back to do that first.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="ty-page">
+      <div className="ty-card">
+        <div className="ty-icon" aria-hidden="true">
+          ✔
+        </div>
+        <h1>You&rsquo;re in! Your seat is reserved.</h1>
+        <p className="sub">
+          Thank you for joining the 5-Day 1-on-1 AI Digital Product Challenge — we&rsquo;re
+          genuinely excited to build with you.
+        </p>
+
+        {hasPaymentEvidence && (
+          <>
+            <ul className="ty-steps">
+              <li>
+                <span className="num">1</span>
+                <span>
+                  <b>Check your email</b> for your payment receipt and challenge details.
+                </span>
+              </li>
+              <li>
+                <span className="num">2</span>
+                <span>
+                  <b>Join the WhatsApp group below</b> — that&rsquo;s where we&rsquo;ll share your
+                  Day 1 scheduling link and keep you updated.
+                </span>
+              </li>
+              <li>
+                <span className="num">3</span>
+                <span>
+                  <b>Block time on Day 1</b> — come with an open mind, even if you don&rsquo;t
+                  have a product idea yet.
+                </span>
+              </li>
+            </ul>
+            <WhatsAppCta />
+            {status === "unverified" && (
+              <p className="ty-status">
+                We couldn&rsquo;t automatically confirm this payment just now — if you were
+                charged, you&rsquo;re still all set. Message us in the WhatsApp group above and
+                we&rsquo;ll sort it out.
+              </p>
+            )}
+          </>
+        )}
+      </div>
+    </main>
+  );
+}

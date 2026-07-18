@@ -1,7 +1,7 @@
 /** Central place for site-wide config. Update pricing/links here — every
  *  component and API route imports from this file rather than hardcoding. */
 
-export const SITE_URL = "https://melroy.dev";
+export const SITE_URL = "https://digitalsales.coachingsales.space";
 
 export const SITE_TITLE =
   "Build & Launch Your AI Digital Product in 5 Days — 1-on-1 Challenge";
@@ -16,6 +16,20 @@ export const PAYMENT_LINK =
 
 export const BASE_PRICE = 49;
 export const ORIGINAL_PRICE = 1999;
+/** Site charges in INR (Razorpay checkout, all displayed prices) — the
+ *  Purchase event reports this currency, not the USD in generic examples. */
+export const CURRENCY = "INR";
+
+export const META_PIXEL_ID = "913277347759939";
+/** Conversions API dataset id — defaults to the Pixel id, which is correct
+ *  for a standard single-Pixel setup. Override via META_DATASET_ID if this
+ *  project ever moves to a distinct CAPI Gateway dataset. */
+export const META_DATASET_ID = process.env.META_DATASET_ID ?? META_PIXEL_ID;
+
+export const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/IkPhVgr0Ve51z7MM80x5bW";
+
+/** Microsoft Clarity heatmaps/session recordings — see components/MicrosoftClarity.tsx */
+export const CLARITY_PROJECT_ID = "xo9lpr0ak3";
 
 export interface OrderBump {
   id: string;

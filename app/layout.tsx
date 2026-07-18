@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Inter } from "next/font/google";
 import "./globals.css";
-import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/constants";
+import { META_PIXEL_ID, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/constants";
+import MetaPixel from "@/components/MetaPixel";
+import MicrosoftClarity from "@/components/MicrosoftClarity";
 
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -54,7 +56,25 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body>{children}</body>
+      <body>
+        {/* Meta Pixel <noscript> fallback — must be the first thing in <body>.
+            Deliberately a raw <img>, not next/image: this only renders when
+            JS is disabled, so next/image's client-side optimizer would never
+            run anyway — Meta's own required snippet is a plain <img>. */}
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            height="1"
+            width="1"
+            style={{ display: "none" }}
+            src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
+            alt=""
+          />
+        </noscript>
+        <MetaPixel />
+        <MicrosoftClarity />
+        {children}
+      </body>
     </html>
   );
 }

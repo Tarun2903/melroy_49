@@ -1,8 +1,5 @@
-"use client";
-
-import { useState } from "react";
 import CtaButton from "./CtaButton";
-import { BASE_PRICE, ORDER_BUMPS, ORIGINAL_PRICE } from "@/lib/constants";
+import { BASE_PRICE, ORIGINAL_PRICE } from "@/lib/constants";
 
 const INCLUDED_ITEMS = [
   "Five private 1-on-1 coaching sessions",
@@ -15,13 +12,11 @@ const INCLUDED_ITEMS = [
   "A repeatable framework for every future product",
 ];
 
+/** Order bumps (Templates & Creatives, Meeting Recordings) are no longer
+ * shown upfront here — they're offered one at a time inside LeadModal,
+ * after the visitor has entered their details and is already checking out.
+ * See components/LeadModal.tsx and lib/constants.ts's ORDER_BUMPS. */
 export default function Included() {
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-
-  const total =
-    BASE_PRICE +
-    ORDER_BUMPS.reduce((sum, bump) => (checked[bump.id] ? sum + bump.price : sum), 0);
-
   return (
     <section id="included" style={{ paddingTop: 0 }} aria-labelledby="included-heading">
       <div className="wrap">
@@ -45,40 +40,12 @@ export default function Included() {
             ))}
           </ul>
 
-          {/* Optional add-ons (order bumps). Checking a box updates the total
-              shown below client-side only — wiring the selected total into an
-              actual Razorpay charge happens in app/api/razorpay/create-order. */}
-          <div className="addons">
-            <h3 className="addons-title">Boost your order (optional)</h3>
-            <ul className="addon-list">
-              {ORDER_BUMPS.map((bump) => (
-                <li className="addon" key={bump.id}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      className="addon-check"
-                      checked={!!checked[bump.id]}
-                      onChange={(e) =>
-                        setChecked((prev) => ({ ...prev, [bump.id]: e.target.checked }))
-                      }
-                    />
-                    <span className="addon-copy">
-                      <b>{bump.name}</b>
-                      <span className="addon-desc">{bump.description}</span>
-                    </span>
-                    <span className="addon-price">+₹{bump.price}</span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
-
           <div className="cta-line">
             <p className="price-tag price-tag--on-dark">
-              <s>₹{ORIGINAL_PRICE.toLocaleString("en-IN")}</s>₹{total}{" "}
+              <s>₹{ORIGINAL_PRICE.toLocaleString("en-IN")}</s>₹{BASE_PRICE}{" "}
               <span className="price-tag__note">one-time</span>
             </p>
-            <CtaButton label={`Get Everything for ₹${total}`} />
+            <CtaButton label={`Get Everything for ₹${BASE_PRICE}`} />
           </div>
         </div>
       </div>
