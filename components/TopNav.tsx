@@ -28,6 +28,10 @@ export default function TopNav() {
         <a className="brand" href="#top">
           Melroy<span className="hl">.</span>
         </a>
+        {/* Shown only on mobile (see .nav-mobile-text in globals.css), in
+            place of the brand + "Reserve Spot" button, which are hidden at
+            that breakpoint — the hamburger stays on the right either way. */}
+        <span className="nav-mobile-text">Join Before Registration Closes</span>
         <ul className={`navlinks${open ? " open" : ""}`} id="navlinks">
           {LINKS.map((link) => (
             <li key={link.href}>
