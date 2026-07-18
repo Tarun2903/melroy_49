@@ -21,6 +21,7 @@
    17. Scroll-reveal animations & counters
    18. Lead capture modal
    19. Thank You page + WhatsApp CTA
+   20. Disclaimer
    ========================================================= */
 
 /* ---------- 1. Design tokens ---------- */
@@ -458,3 +459,8 @@ footer.site-footer a{color:var(--muted);text-decoration:underline}
 .btn-whatsapp:hover{background:linear-gradient(135deg,#4CEB86,#2FE070 65%);
   box-shadow:0 12px 28px rgba(37,211,102,.5), inset 0 -3px 0 rgba(0,0,0,.15)}
 .btn-whatsapp:active{box-shadow:0 4px 14px rgba(37,211,102,.45), inset 0 -3px 0 rgba(0,0,0,.15)}
+
+/* ---------- 20. Disclaimer ---------- */
+.disclaimer{padding:var(--sp-7) 0;text-align:center;opacity:.65}
+.disclaimer p{font-size:.76rem;line-height:1.6;color:var(--muted);max-width:680px;margin:0 auto var(--sp-3)}
+.disclaimer p:last-child{margin-bottom:0}

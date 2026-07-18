@@ -10,6 +10,7 @@ import Guarantee from "@/components/Guarantee";
 import Faq from "@/components/Faq";
 import FinalCta from "@/components/FinalCta";
 import Footer from "@/components/Footer";
+import Disclaimer from "@/components/Disclaimer";
 import BuyBar from "@/components/BuyBar";
 import LeadModal from "@/components/LeadModal";
 import ScrollRevealInit from "@/components/ScrollRevealInit";
@@ -71,6 +72,7 @@ export default function Home() {
         <FinalCta />
       </main>
 
+      <Disclaimer />
       <Footer />
       <BuyBar />
       <LeadModal />

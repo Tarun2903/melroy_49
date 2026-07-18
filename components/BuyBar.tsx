@@ -4,26 +4,23 @@ import { useEffect, useRef, useState } from "react";
 import CtaButton from "./CtaButton";
 import { BASE_PRICE } from "@/lib/constants";
 
-/** Slides up from the bottom on mobile once the visitor scrolls past the
- * hero. Mirrors the original vanilla-JS IntersectionObserver on `.hero`.
- * On mobile the trigger uses a shrunk root (rootMargin) so it fires as soon
- * as the hero is mostly scrolled past, rather than waiting for every last
- * pixel of it (including the tall trust-strip footer) to leave the
- * viewport — desktop keeps the original full-exit trigger. */
+/** Slides up from the bottom once the visitor scrolls past the first CTA
+ * button on the page (the hero's "Reserve My Spot" button), so it appears
+ * right after that button leaves view rather than waiting for the whole
+ * hero section to scroll past. */
 export default function BuyBar() {
   const [show, setShow] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const hero = document.querySelector(".hero");
-    if (!hero || !("IntersectionObserver" in window)) return;
+    const firstCta = document.querySelector(".cta");
+    if (!firstCta || !("IntersectionObserver" in window)) return;
 
-    const isMobile = window.matchMedia("(max-width: 899px)").matches;
     const observer = new IntersectionObserver(
       ([entry]) => setShow(!entry.isIntersecting),
-      { threshold: 0, rootMargin: isMobile ? "0px 0px -50% 0px" : "0px" }
+      { threshold: 0 }
     );
-    observer.observe(hero);
+    observer.observe(firstCta);
     return () => observer.disconnect();
   }, []);
 

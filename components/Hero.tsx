@@ -30,12 +30,12 @@ export default function Hero() {
             <p className="hero-cta-note">Instant confirmation • Secured by Razorpay</p>
             <ul className="trust-strip">
               <li>
-                <span className="stars" aria-hidden="true">
-                  ★
-                </span>{" "}
                 <b>
                   <AnimatedCounter target={4.9} decimals={1} />
-                </b>
+                </b>{" "}
+                <span className="stars" aria-hidden="true">
+                  ★
+                </span>
                 &nbsp;from past participants
               </li>
               <li>
