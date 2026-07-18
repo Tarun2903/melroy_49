@@ -35,6 +35,7 @@ function readStashedLead(): StashedLead {
 export default function ThankYouContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<Status>("checking");
+  const [purchasedItems, setPurchasedItems] = useState<string[]>([]);
 
   useEffect(() => {
     const paymentId = searchParams.get("razorpay_payment_id");
@@ -45,9 +46,18 @@ export default function ThankYouContent() {
     }
 
     const firedKey = `meta_purchase_fired_${paymentId}`;
-    if (localStorage.getItem(firedKey)) {
+    const cached = localStorage.getItem(firedKey);
+    if (cached) {
       // Already confirmed + fired in this browser (e.g. page refresh) —
       // show the confirmed state again without re-verifying or re-firing.
+      // (JSON.parse of the old plain "1" flag format from before this was
+      // an object just yields the number 1, so `?.purchasedItems` is
+      // safely undefined and falls back to [] — no crash on old data.)
+      try {
+        setPurchasedItems(JSON.parse(cached)?.purchasedItems ?? []);
+      } catch {
+        setPurchasedItems([]);
+      }
       setStatus("confirmed");
       return;
     }
@@ -74,24 +84,43 @@ export default function ThankYouContent() {
       body: JSON.stringify(payload),
     })
       .then((res) => res.json())
-      .then((data: { verified: boolean; eventId?: string; value?: number; currency?: string }) => {
-        if (!data.verified || !data.eventId) {
-          console.warn("Payment could not be verified — Purchase event not fired.");
-          setStatus("unverified");
-          return;
-        }
+      .then(
+        (data: {
+          verified: boolean;
+          eventId?: string;
+          value?: number;
+          currency?: string;
+          addonIds?: string[];
+          purchasedItems?: string[];
+        }) => {
+          if (!data.verified || !data.eventId) {
+            console.warn("Payment could not be verified — Purchase event not fired.");
+            setStatus("unverified");
+            return;
+          }
 
-        // Same eventID as the server sent to Meta CAPI — this is what lets
-        // Meta deduplicate the browser + server events into one.
-        window.fbq?.(
-          "track",
-          "Purchase",
-          { value: data.value, currency: data.currency },
-          { eventID: data.eventId }
-        );
-        localStorage.setItem(firedKey, "1");
-        setStatus("confirmed");
-      })
+          // Same eventID (and the same content_ids/value/currency) as the
+          // server sent to Meta CAPI — matching custom_data plus a shared
+          // eventID is what lets Meta deduplicate the browser + server
+          // events into one, rather than double-counting the purchase.
+          window.fbq?.(
+            "track",
+            "Purchase",
+            {
+              value: data.value,
+              currency: data.currency,
+              ...(data.addonIds && data.addonIds.length > 0
+                ? { content_ids: data.addonIds, content_type: "product" }
+                : {}),
+            },
+            { eventID: data.eventId }
+          );
+          const items = data.purchasedItems ?? [];
+          localStorage.setItem(firedKey, JSON.stringify({ purchasedItems: items }));
+          setPurchasedItems(items);
+          setStatus("confirmed");
+        }
+      )
       .catch((err) => {
         console.error("Payment verification request failed:", err);
         setStatus("unverified");
@@ -134,6 +163,12 @@ export default function ThankYouContent() {
           Thank you for joining the 5-Day 1-on-1 AI Digital Product Challenge — we&rsquo;re
           genuinely excited to build with you.
         </p>
+
+        {status === "confirmed" && purchasedItems.length > 0 && (
+          <p className="ty-order">
+            Your order also includes: <b>{purchasedItems.join(", ")}</b>
+          </p>
+        )}
 
         {hasPaymentEvidence && (
           <>

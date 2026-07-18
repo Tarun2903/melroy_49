@@ -115,38 +115,71 @@ from the root layout, not from `page.tsx`.
 
 ## Order bumps & checkout flow
 
-The two order bumps (`ORDER_BUMPS` in `lib/constants.ts` — Templates &
-Creatives +₹90, Full Access to Meeting Recordings & Notes +₹19) are **not**
-shown upfront on the landing page. Clicking any `.cta` button opens
-`LeadModal`, which steps through:
+The two order bumps (`ORDER_BUMPS` in `lib/constants.ts`):
 
-1. **Lead form** — name/phone/email, same as before. On submit, the lead is
-   saved (`/api/leads`) and stashed in `sessionStorage` (for Meta CAPI match
+- **Marketing Swipe File** — +₹90 — 200+ examples (Landing Pages, Sales
+  Emails, Headlines, Winning Ads, Checkout Pages, Pricing Sections)
+- **AI Prompt Vault** — +₹190 — 300+ prompts (Sales Pages, Meta Ads, Landing
+  Pages, Email Marketing, Content Creation, Funnels)
+
+are **not** shown upfront on the landing page. Clicking any `.cta` button
+opens `LeadModal`, which steps through:
+
+1. **Lead form** — name/phone/email. On submit, the lead is saved
+   (`/api/leads`) and stashed in `sessionStorage` (for Meta CAPI match
    quality later), then the modal advances — it does not close or redirect
    yet.
-2. **Bump 1** (Templates & Creatives) — shown alone, with "Yes, add this" /
-   "No thanks, continue". Either answer advances to the next step.
-3. **Bump 2** (Meeting Recordings) — same pattern. Answering either way
-   triggers checkout.
+2. **Bump 1** (Marketing Swipe File) — shown alone, with "Yes, add this" /
+   "No thanks, continue" and a live "Your total: ₹X" line. Either answer
+   advances to the next step.
+3. **Bump 2** (AI Prompt Vault) — same pattern, its own live running total
+   (reflecting bump 1's decision). Answering either way triggers checkout.
 4. **Checkout** — `LeadModal` POSTs the accepted bump ids to
    `app/api/razorpay/create-payment-link/route.ts`, which computes the real
-   total server-side (never trusting a client-supplied amount) and creates
+   total server-side (never trusting a client-supplied amount), stores the
+   accepted ids in the Payment Link's `notes.addon_ids` field, and creates
    an actual Razorpay Payment Link for that amount via their API. The
    visitor is redirected there, so **what they're charged matches exactly
-   what they agreed to** — accepting a bump really does add it to the
-   charge, it's not just a recorded preference.
+   what they agreed to**.
+
+All four purchase combinations produce distinct, correct totals: ₹49 alone,
+₹139 (+ Swipe File), ₹239 (+ Prompt Vault), ₹329 (both).
+
+**How bump selection survives the redirect to Razorpay and back**: Razorpay
+Payment Links support an arbitrary `notes` object that's stored with the
+link and readable afterwards via their API. `create-payment-link` writes
+`notes.addon_ids` (e.g. `"swipe-file,prompt-vault"`) when creating the link;
+`app/api/payment/verify/route.ts` reads it back via
+`GET /v1/payment_links/{id}` once the signature is verified, resolves it to
+bump names, stores it in Supabase's `purchases.addon_ids` column, includes
+it in the Meta CAPI `content_ids`, and returns it to the Thank You page
+(which shows "Your order also includes: ..." and passes the same
+`content_ids` into the browser Pixel call). This is why bump tracking
+doesn't rely on guessing from the charged amount — it's read from the
+source of truth.
 
 **Fallback, so this can never break checkout**: if `create-payment-link`
 fails for any reason (Razorpay down, misconfigured keys, network error),
 `LeadModal` catches it and redirects to the static `PAYMENT_LINK` instead
-(fixed ₹49, no bumps). A visitor never sees an error — worst case, a bump
-they accepted doesn't get charged for, which is a business/reconciliation
-question, not a broken flow.
+(fixed ₹49, no bumps, no notes). A visitor never sees an error — worst
+case, a bump they accepted doesn't get charged for, which is a
+business/reconciliation question, not a broken flow.
 
 Every dynamically created Payment Link reuses the same `callback_url`
 (`${SITE_URL}/thank-you`) as the static one, so the Thank You page /
 signature verification / Purchase event pipeline (below) works identically
 regardless of which link a given customer paid through.
+
+**Bug fixed (Jul 2026): "Yes, add this" appearing to not work.** `LeadModal`
+is a singleton mounted once for the whole page — its `redirecting` state
+persisted across separate modal open/close cycles. If a checkout attempt
+ever set `redirecting=true` and the redirect didn't complete in that tab
+(a failed request, or the browser restoring the page from back/forward
+cache after hitting "back" from Razorpay), every button in the modal —
+including "Yes, add this" — stayed permanently `disabled` for the rest of
+the session. Fixed by resetting `redirecting`/`submitting` (not just
+`step`/`selectedBumps`) both when the modal reopens and whenever it closes
+for any reason (Escape, the X button, or a completed checkout).
 
 ## Meta Pixel, Purchase tracking, and the Thank You page
 
@@ -209,7 +242,9 @@ guessed at:**
    is correct for a standard setup. Only set this if Meta gave you a
    separate Conversions API Gateway dataset id.
 6. **Run this SQL in the Supabase SQL Editor** (same place as the earlier
-   `leads` table SQL):
+   `leads` table SQL) — if you already created `purchases` before the order
+   bumps were reworked, just run the `alter table` line at the bottom; it's
+   additive and safe to run even if the column already exists:
 
    ```sql
    create table if not exists public.purchases (
@@ -220,21 +255,28 @@ guessed at:**
      amount numeric,
      currency text,
      event_id text not null,
+     addon_ids text,
      created_at timestamptz not null default now()
    );
 
    alter table public.purchases enable row level security;
 
-   create policy "Allow server-side purchase inserts"
+   create policy if not exists "Allow server-side purchase inserts"
    on public.purchases
    for insert
    to anon
    with check (true);
+
+   -- Only needed if the table already existed without this column:
+   alter table public.purchases add column if not exists addon_ids text;
    ```
 
    Same minimal-privilege pattern as `leads`: INSERT-only for the `anon`
    role (which is what the publishable key authenticates as), no read/
-   update/delete policy exists, so nothing else is exposed.
+   update/delete policy exists, so nothing else is exposed. `addon_ids` is a
+   comma-separated list of `ORDER_BUMPS` ids (e.g. `swipe-file,prompt-vault`),
+   read back from the Razorpay Payment Link's `notes` field — see "Order
+   bumps & checkout flow" below for how that round-trip works.
 
 Until all of the above are set, the flow still works end-to-end without
 errors — `LeadModal` → Razorpay → back to `/thank-you` — it just won't be

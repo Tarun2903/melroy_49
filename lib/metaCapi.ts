@@ -26,6 +26,9 @@ interface PurchaseCapiParams {
   fbc?: string;
   clientIpAddress?: string;
   clientUserAgent?: string;
+  /** Order-bump ids included in this purchase (see lib/constants.ts
+   * ORDER_BUMPS), reported to Meta as content_ids for richer reporting. */
+  contentIds?: string[];
 }
 
 interface CapiResult {
@@ -71,6 +74,9 @@ export async function sendPurchaseCapiEvent(params: PurchaseCapiParams): Promise
         custom_data: {
           value: params.value,
           currency: params.currency,
+          ...(params.contentIds && params.contentIds.length > 0
+            ? { content_ids: params.contentIds, content_type: "product" }
+            : {}),
         },
       },
     ],

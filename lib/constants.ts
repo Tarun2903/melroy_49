@@ -34,23 +34,45 @@ export const CLARITY_PROJECT_ID = "xo9lpr0ak3";
 export interface OrderBump {
   id: string;
   name: string;
-  description: string;
+  /** Lead-in line before the bullet list, e.g. "200+ proven examples of:" */
+  intro: string;
+  bullets: string[];
   price: number;
 }
 
+/** Order bumps, offered one at a time inside LeadModal after the lead form
+ * (see components/LeadModal.tsx) — not shown upfront on the landing page.
+ * `id` values are also used as Razorpay payment-link notes keys
+ * (app/api/razorpay/create-payment-link) — keep them stable; changing an id
+ * changes what past purchase records mean. */
 export const ORDER_BUMPS: OrderBump[] = [
   {
-    id: "templates",
-    name: "Templates & Creatives",
-    description:
-      "Ready-to-use design templates and creative assets for your product and brand.",
+    id: "swipe-file",
+    name: "Marketing Swipe File",
+    intro: "200+ proven examples of:",
+    bullets: [
+      "Landing Pages",
+      "Sales Emails",
+      "Headlines",
+      "Winning Ads",
+      "Checkout Pages",
+      "Pricing Sections",
+    ],
     price: 90,
   },
   {
-    id: "recordings",
-    name: "Full Access to Meeting Recordings & Notes",
-    description: "Rewatch every session and review written notes anytime.",
-    price: 19,
+    id: "prompt-vault",
+    name: "AI Prompt Vault",
+    intro: "300+ AI prompts for:",
+    bullets: [
+      "Sales Pages",
+      "Meta Ads",
+      "Landing Pages",
+      "Email Marketing",
+      "Content Creation",
+      "Funnels",
+    ],
+    price: 190,
   },
 ];
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ORDER_BUMPS, PAYMENT_LINK } from "@/lib/constants";
+import { BASE_PRICE, ORDER_BUMPS, PAYMENT_LINK } from "@/lib/constants";
 
 type Step = "form" | "bump1" | "bump2";
 
@@ -39,8 +39,20 @@ export default function LeadModal() {
         e.preventDefault();
         lastFocused.current = document.activeElement as HTMLElement;
         setSource(btn.textContent?.trim() ?? "");
+        // Reset every piece of flow state, not just step/selectedBumps —
+        // this dialog is a singleton mounted once for the whole page, so
+        // its state otherwise survives across separate open/close cycles.
+        // Previously `redirecting`/`submitting` were never reset here: if a
+        // checkout attempt ever set redirecting=true and the redirect
+        // didn't complete in this tab (a failed request, or the browser
+        // restoring this page from back/forward cache after the visitor
+        // hit "back" from Razorpay), every button stayed permanently
+        // disabled for the rest of the session — including "Yes, add this"
+        // on a fresh reopen. That was the reported bug.
         setStep("form");
         setSelectedBumps([]);
+        setSubmitting(false);
+        setRedirecting(false);
         formRef.current?.reset();
         dialog.showModal();
         document.getElementById("leadName")?.focus();
@@ -53,6 +65,15 @@ export default function LeadModal() {
       handlers.forEach(({ el, fn }) => el.removeEventListener("click", fn));
     };
   }, []);
+
+  // Also reset on close (Escape, backdrop, the X button) so a half-finished
+  // bump sequence never lingers into the next time the dialog opens.
+  function handleDialogClose() {
+    lastFocused.current?.focus();
+    setStep("form");
+    setSelectedBumps([]);
+    setRedirecting(false);
+  }
 
   function handleClose() {
     dialogRef.current?.close();
@@ -100,13 +121,12 @@ export default function LeadModal() {
   }
 
   function answerBump(bumpId: string, accepted: boolean, nextStep: Step | null) {
-    if (accepted) {
-      setSelectedBumps((prev) => [...prev, bumpId]);
-    }
+    const updatedSelection = accepted ? [...selectedBumps, bumpId] : selectedBumps;
+    setSelectedBumps(updatedSelection);
     if (nextStep) {
       setStep(nextStep);
     } else {
-      finalizeCheckout(accepted ? [...selectedBumps, bumpId] : selectedBumps);
+      finalizeCheckout(updatedSelection);
     }
   }
 
@@ -130,11 +150,17 @@ export default function LeadModal() {
     } catch (err) {
       console.error("Dynamic payment link request failed — falling back to static PAYMENT_LINK:", err);
     }
+    // Only reached on the fallback path (the success path returns above) —
+    // clear the flag before falling back so the buttons aren't left
+    // disabled if this redirect is somehow interrupted too.
+    setRedirecting(false);
     dialogRef.current?.close();
     window.location.href = PAYMENT_LINK;
   }
 
   const [bump1, bump2] = ORDER_BUMPS;
+  const runningTotal =
+    BASE_PRICE + ORDER_BUMPS.filter((b) => selectedBumps.includes(b.id)).reduce((sum, b) => sum + b.price, 0);
 
   return (
     <dialog
@@ -142,7 +168,7 @@ export default function LeadModal() {
       id="leadModal"
       ref={dialogRef}
       aria-labelledby="leadModalTitle"
-      onClose={() => lastFocused.current?.focus()}
+      onClose={handleDialogClose}
     >
       {step === "form" && (
         <form className="lead-form" id="leadForm" ref={formRef} noValidate onSubmit={handleFormSubmit}>
@@ -194,10 +220,16 @@ export default function LeadModal() {
           <h2 id="leadModalTitle" className="lead-title bump-name">
             Add {bump1.name}?
           </h2>
-          <p className="bump-desc">{bump1.description}</p>
+          <p className="bump-desc">{bump1.intro}</p>
+          <ul className="bump-bullets">
+            {bump1.bullets.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
           <p className="bump-price">
             +₹{bump1.price} <span>added to your order today</span>
           </p>
+          <p className="bump-total">Your total: ₹{runningTotal}</p>
           <div className="bump-actions">
             <button
               type="button"
@@ -228,10 +260,16 @@ export default function LeadModal() {
           <h2 id="leadModalTitle" className="lead-title bump-name">
             Add {bump2.name}?
           </h2>
-          <p className="bump-desc">{bump2.description}</p>
+          <p className="bump-desc">{bump2.intro}</p>
+          <ul className="bump-bullets">
+            {bump2.bullets.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
           <p className="bump-price">
             +₹{bump2.price} <span>added to your order today</span>
           </p>
+          <p className="bump-total">Your total: ₹{runningTotal}</p>
           <div className="bump-actions">
             <button
               type="button"

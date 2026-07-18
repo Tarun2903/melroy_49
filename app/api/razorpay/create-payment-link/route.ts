@@ -62,6 +62,13 @@ export async function POST(request: NextRequest) {
         description,
         callback_url: `${SITE_URL}/thank-you`,
         callback_method: "get",
+        // Razorpay's `notes` field round-trips with the payment link and is
+        // readable later via the Payment Links API — this is how
+        // app/api/payment/verify knows which bumps were purchased, without
+        // needing to reverse-engineer it from the charged amount alone.
+        notes: {
+          addon_ids: selectedBumps.map((b) => b.id).join(","),
+        },
       }),
     });
 

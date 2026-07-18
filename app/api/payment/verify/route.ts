@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseClient } from "@/lib/supabase";
 import { sendPurchaseCapiEvent } from "@/lib/metaCapi";
-import { BASE_PRICE, CURRENCY } from "@/lib/constants";
+import { BASE_PRICE, CURRENCY, ORDER_BUMPS } from "@/lib/constants";
 
 /**
  * Verifies a Razorpay Payment Link redirect and, on first verification of a
@@ -70,6 +70,31 @@ async function fetchAuthoritativeAmount(
   }
 }
 
+/** Reads back which order bumps were included, from the `notes.addon_ids`
+ * set when the link was created (see app/api/razorpay/create-payment-link).
+ * Falls back to an empty list — e.g. for payments made through the static
+ * PAYMENT_LINK fallback, which was never created with bump notes. */
+async function fetchAddonIds(
+  paymentLinkId: string,
+  keyId: string,
+  keySecret: string
+): Promise<string[]> {
+  try {
+    const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+    const res = await fetch(`https://api.razorpay.com/v1/payment_links/${paymentLinkId}`, {
+      headers: { Authorization: `Basic ${auth}` },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const raw = data?.notes?.addon_ids;
+    if (typeof raw !== "string" || raw.length === 0) return [];
+    const knownIds = new Set(ORDER_BUMPS.map((b) => b.id));
+    return raw.split(",").filter((id) => knownIds.has(id));
+  } catch {
+    return [];
+  }
+}
+
 export async function POST(request: NextRequest) {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -110,9 +135,13 @@ export async function POST(request: NextRequest) {
 
   // Signature is authentic from here on — this really is a completed payment.
   const eventId = `purchase_${paymentId}`;
-  const authoritative = await fetchAuthoritativeAmount(paymentId, keyId, keySecret);
+  const [authoritative, addonIds] = await Promise.all([
+    fetchAuthoritativeAmount(paymentId, keyId, keySecret),
+    fetchAddonIds(paymentLinkId, keyId, keySecret),
+  ]);
   const value = authoritative?.amount ?? BASE_PRICE;
   const currency = authoritative?.currency ?? CURRENCY;
+  const purchasedItems = ORDER_BUMPS.filter((b) => addonIds.includes(b.id)).map((b) => b.name);
 
   const supabase = getSupabaseClient();
   let alreadyProcessed = false;
@@ -126,6 +155,7 @@ export async function POST(request: NextRequest) {
         amount: value,
         currency,
         event_id: eventId,
+        addon_ids: addonIds.join(","),
       },
     ]);
     // Postgres unique_violation — this payment was already recorded, so a
@@ -157,8 +187,17 @@ export async function POST(request: NextRequest) {
       fbc: body.fbc,
       clientIpAddress: forwardedFor?.split(",")[0]?.trim(),
       clientUserAgent: request.headers.get("user-agent") ?? undefined,
+      contentIds: addonIds,
     });
   }
 
-  return NextResponse.json({ verified: true, eventId, value, currency, alreadyProcessed });
+  return NextResponse.json({
+    verified: true,
+    eventId,
+    value,
+    currency,
+    alreadyProcessed,
+    addonIds,
+    purchasedItems,
+  });
 }
