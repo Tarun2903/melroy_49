@@ -137,9 +137,11 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .topnav{position:sticky;top:0;z-index:70;background:rgba(11,16,32,.88);backdrop-filter:blur(10px);
   border-bottom:1px solid rgba(255,255,255,.08)}
 .topnav .inner{position:relative;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-5);padding:var(--sp-4) var(--sp-6)}
-.brand{font-family:var(--display);font-weight:800;color:#fff;font-size:1.1rem;text-decoration:none;letter-spacing:-.01em}
+.brand{display:none;font-family:var(--display);font-weight:800;color:#fff;font-size:1.1rem;text-decoration:none;letter-spacing:-.01em}
 .brand .hl{color:var(--amber)}
-.nav-mobile-text{display:none}
+.nav-actions .btn{display:none}
+.nav-mobile-text{display:block;min-width:0;flex:1;font-family:var(--display);font-weight:700;
+  color:#fff;font-size:.85rem;letter-spacing:-.005em;line-height:1.25}
 .navlinks{display:flex;gap:var(--sp-7)}
 .navlinks a{color:#B9C2DB;text-decoration:none;font-size:.92rem;font-weight:600;transition:color .15s ease;position:relative}
 .navlinks a::after{content:"";position:absolute;left:0;right:100%;bottom:-4px;height:2px;background:var(--amber);transition:right .2s ease}
@@ -158,10 +160,6 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 
 @media(max-width:860px){
   .nav-toggle{display:flex}
-  .brand{display:none}
-  .nav-actions .btn{display:none}
-  .nav-mobile-text{display:block;min-width:0;flex:1;font-family:var(--display);font-weight:700;
-    color:#fff;font-size:.85rem;letter-spacing:-.005em;line-height:1.25}
   .navlinks{
     position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;
     background:rgba(11,16,32,.98);backdrop-filter:blur(10px);
