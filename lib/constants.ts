@@ -75,9 +75,6 @@ export interface Testimonial {
   name: string;
   role: string;
   rating: number;
-  avatar: string;
-  avatarWidth: number;
-  avatarHeight: number;
 }
 
 export interface FaqItem {
@@ -123,9 +120,6 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Priya R.",
     role: "HR Professional, Bengaluru",
     rating: 5,
-    avatar: "/images/testimonial-priya.png",
-    avatarWidth: 512,
-    avatarHeight: 512,
   },
   {
     quote:
@@ -133,9 +127,6 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Arjun S.",
     role: "Sales Manager, Pune",
     rating: 5,
-    avatar: "/images/testimonial-arjun.png",
-    avatarWidth: 512,
-    avatarHeight: 512,
   },
   {
     quote:
@@ -143,9 +134,6 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Meera K.",
     role: "Freelance Designer, Kochi",
     rating: 5,
-    avatar: "/images/testimonial-meera.png",
-    avatarWidth: 512,
-    avatarHeight: 512,
   },
   {
     quote:
@@ -153,9 +141,6 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Rahul V.",
     role: "Software Engineer, Hyderabad",
     rating: 5,
-    avatar: "/images/testimonial-rahul.png",
-    avatarWidth: 512,
-    avatarHeight: 512,
   },
   {
     quote:
@@ -163,9 +148,6 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Sneha N.",
     role: "Homemaker turned Creator, Chennai",
     rating: 5,
-    avatar: "/images/testimonial-sneha.png",
-    avatarWidth: 512,
-    avatarHeight: 512,
   },
   {
     quote:
@@ -173,8 +155,5 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Vikram D.",
     role: "MBA Student, Mumbai",
     rating: 5,
-    avatar: "/images/testimonial-vikram.png",
-    avatarWidth: 512,
-    avatarHeight: 512,
   },
 ];

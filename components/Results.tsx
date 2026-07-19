@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { TESTIMONIALS } from "@/lib/constants";
 
 export default function Results() {
@@ -16,16 +15,6 @@ export default function Results() {
               <h3 className="case-headline">&ldquo;{t.quote}&rdquo;</h3>
               <p className="case-client">{t.name}</p>
               <p className="case-business">{t.role}</p>
-              <div className="case-shot">
-                <Image
-                  className="case-shot-img"
-                  src={t.avatar}
-                  alt={t.name}
-                  fill
-                  style={{ objectFit: "contain" }}
-                  sizes="(max-width: 640px) 90vw, 45vw"
-                />
-              </div>
             </li>
           ))}
         </ul>
