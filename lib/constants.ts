@@ -70,13 +70,14 @@ export const ORDER_BUMPS: OrderBump[] = [
   },
 ];
 
-export interface CaseStudy {
-  headline: string;
-  client: string;
-  business: string;
-  image: string;
-  imageWidth: number;
-  imageHeight: number;
+export interface Testimonial {
+  quote: string;
+  name: string;
+  role: string;
+  rating: number;
+  avatar: string;
+  avatarWidth: number;
+  avatarHeight: number;
 }
 
 export interface FaqItem {
@@ -115,37 +116,65 @@ export const FAQS: FaqItem[] = [
   },
 ];
 
-export const CASE_STUDIES: CaseStudy[] = [
+export const TESTIMONIALS: Testimonial[] = [
   {
-    headline: "100+ Qualified Calls Booked",
-    client: "David Birtwistle",
-    business: "UK Fitness Creator",
-    image: "/images/result-1.jpg",
-    imageWidth: 1672,
-    imageHeight: 941,
+    quote:
+      "I'd been ‘planning’ a digital product for two years. In 5 days with Melroy I actually launched an AI-built resume toolkit—and made my first sale within a week.",
+    name: "Priya R.",
+    role: "HR Professional, Bengaluru",
+    rating: 5,
+    avatar: "/images/testimonial-priya.png",
+    avatarWidth: 512,
+    avatarHeight: 512,
   },
   {
-    headline: "146+ Appointments Booked In 60 Days",
-    client: "Satyam",
-    business: "Visionary Focus",
-    image: "/images/result-2.jpg",
-    imageWidth: 1658,
-    imageHeight: 949,
+    quote:
+      "I'm not technical at all. The 1-on-1 format is what made the difference—every time I got stuck, we fixed it live on the call instead of me giving up.",
+    name: "Arjun S.",
+    role: "Sales Manager, Pune",
+    rating: 5,
+    avatar: "/images/testimonial-arjun.png",
+    avatarWidth: 512,
+    avatarHeight: 512,
   },
   {
-    headline: "35 Discovery Calls Booked In Less Than A Week",
-    client: "Jatin Naren",
-    business: "Amazon Automation",
-    image: "/images/result-3.jpg",
-    imageWidth: 1662,
-    imageHeight: 946,
+    quote:
+      "The best ₹99 I've spent. I launched a mini-course with AI-generated workbooks. The funnel template alone was worth 10× the price.",
+    name: "Meera K.",
+    role: "Freelance Designer, Kochi",
+    rating: 5,
+    avatar: "/images/testimonial-meera.png",
+    avatarWidth: 512,
+    avatarHeight: 512,
   },
   {
-    headline: "$200K+ AI Coaching Sales",
-    client: "Jordan Lee",
-    business: "AI Acquisition",
-    image: "/images/result-4.jpg",
-    imageWidth: 1672,
-    imageHeight: 941,
+    quote:
+      "Day 3 changed how I see my side hustle. Having a real brand page made me take myself seriously—and so did my first customers.",
+    name: "Rahul V.",
+    role: "Software Engineer, Hyderabad",
+    rating: 5,
+    avatar: "/images/testimonial-rahul.png",
+    avatarWidth: 512,
+    avatarHeight: 512,
+  },
+  {
+    quote:
+      "I've bought big courses before and finished none of them. This is the opposite: 5 days, one clear task a day, and someone personally keeping you accountable.",
+    name: "Sneha N.",
+    role: "Homemaker turned Creator, Chennai",
+    rating: 5,
+    avatar: "/images/testimonial-sneha.png",
+    avatarWidth: 512,
+    avatarHeight: 512,
+  },
+  {
+    quote:
+      "Launched my first paid Notion template pack on Day 5. The launch checklist meant zero guesswork—I just followed it step by step.",
+    name: "Vikram D.",
+    role: "MBA Student, Mumbai",
+    rating: 5,
+    avatar: "/images/testimonial-vikram.png",
+    avatarWidth: 512,
+    avatarHeight: 512,
   },
 ];
