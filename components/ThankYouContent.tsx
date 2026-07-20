@@ -32,6 +32,31 @@ function readStashedLead(): StashedLead {
   }
 }
 
+/** The Meta Pixel base snippet (components/MetaPixel.tsx) loads with
+ * strategy="afterInteractive", so it can still be executing when this page's
+ * verify round-trip resolves. Poll briefly for `window.fbq` instead of
+ * firing (or silently skipping) immediately — the stub fbq() installs
+ * synchronously the moment that script runs, so this only needs to cover a
+ * short scheduling gap, not the full async fbevents.js network load. */
+function waitForFbq(timeoutMs = 8000, intervalMs = 100): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window.fbq === "function") {
+      resolve(true);
+      return;
+    }
+    const start = Date.now();
+    const interval = setInterval(() => {
+      if (typeof window.fbq === "function") {
+        clearInterval(interval);
+        resolve(true);
+      } else if (Date.now() - start >= timeoutMs) {
+        clearInterval(interval);
+        resolve(false);
+      }
+    }, intervalMs);
+  });
+}
+
 export default function ThankYouContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<Status>("checking");
@@ -85,7 +110,7 @@ export default function ThankYouContent() {
     })
       .then((res) => res.json())
       .then(
-        (data: {
+        async (data: {
           verified: boolean;
           eventId?: string;
           value?: number;
@@ -99,11 +124,31 @@ export default function ThankYouContent() {
             return;
           }
 
+          const items = data.purchasedItems ?? [];
+          setPurchasedItems(items);
+          setStatus("confirmed");
+
+          const pixelReady = await waitForFbq();
+          if (!pixelReady) {
+            // Payment is verified and the server-side CAPI event already went
+            // out — only the browser Pixel leg failed. Don't mark firedKey:
+            // leaving it unset lets a page refresh retry firing (verify is
+            // safe to re-call — the server is idempotent on payment id).
+            console.error(
+              "Meta Pixel (fbq) never became available — browser Purchase event was not sent. " +
+                "The server-side Conversions API event was still sent. This usually means the " +
+                "Pixel script was blocked (ad blocker / browser privacy setting) or failed to load " +
+                "(network issue) — check the Network tab for a blocked request to " +
+                "connect.facebook.net/en_US/fbevents.js."
+            );
+            return;
+          }
+
           // Same eventID (and the same content_ids/value/currency) as the
           // server sent to Meta CAPI — matching custom_data plus a shared
           // eventID is what lets Meta deduplicate the browser + server
           // events into one, rather than double-counting the purchase.
-          window.fbq?.(
+          window.fbq!(
             "track",
             "Purchase",
             {
@@ -115,10 +160,7 @@ export default function ThankYouContent() {
             },
             { eventID: data.eventId }
           );
-          const items = data.purchasedItems ?? [];
           localStorage.setItem(firedKey, JSON.stringify({ purchasedItems: items }));
-          setPurchasedItems(items);
-          setStatus("confirmed");
         }
       )
       .catch((err) => {
