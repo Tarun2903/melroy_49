@@ -47,6 +47,14 @@ export interface OrderBump {
  * changes what past purchase records mean. */
 export const ORDER_BUMPS: OrderBump[] = [
   {
+    id: "session-recording",
+    name: "Session Recording",
+    intro:
+      "Get lifetime access to the complete 5-Day Challenge recordings so you can revisit every session anytime at your own pace.",
+    bullets: [],
+    price: 99,
+  },
+  {
     id: "swipe-file",
     name: "Marketing Swipe File",
     intro: "200+ proven examples of:",
@@ -58,14 +66,6 @@ export const ORDER_BUMPS: OrderBump[] = [
       "Checkout Pages",
       "Pricing Sections",
     ],
-    price: 99,
-  },
-  {
-    id: "session-recording",
-    name: "Session Recording",
-    intro:
-      "Get lifetime access to the complete 5-Day Challenge recordings so you can revisit every session anytime at your own pace.",
-    bullets: [],
     price: 99,
   },
 ];
