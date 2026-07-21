@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import WhatsAppCta from "./WhatsAppCta";
 
@@ -16,6 +16,16 @@ interface StashedLead {
   name?: string;
   email?: string;
   phone?: string;
+}
+
+/** Verified purchase data needed to fire the Meta Pixel Purchase event,
+ * captured once /api/payment/verify confirms the payment. Firing itself is
+ * deferred to the WhatsApp CTA click (see handleWhatsAppClick below). */
+interface PurchaseData {
+  value?: number;
+  currency?: string;
+  eventId: string;
+  addonIds?: string[];
 }
 
 function readCookie(name: string): string | undefined {
@@ -61,6 +71,10 @@ export default function ThankYouContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<Status>("checking");
   const [purchasedItems, setPurchasedItems] = useState<string[]>([]);
+  const [purchaseData, setPurchaseData] = useState<PurchaseData | null>(null);
+  // Guards against a rapid double-click firing twice within the same page
+  // load, in addition to the cross-reload localStorage guard below.
+  const firingRef = useRef(false);
 
   useEffect(() => {
     const paymentId = searchParams.get("razorpay_payment_id");
@@ -110,7 +124,7 @@ export default function ThankYouContent() {
     })
       .then((res) => res.json())
       .then(
-        async (data: {
+        (data: {
           verified: boolean;
           eventId?: string;
           value?: number;
@@ -124,43 +138,17 @@ export default function ThankYouContent() {
             return;
           }
 
-          const items = data.purchasedItems ?? [];
-          setPurchasedItems(items);
+          // Purchase is only fired once the visitor clicks the WhatsApp CTA
+          // (see handleWhatsAppClick) — stash the verified data here so that
+          // handler has what it needs, but don't fire yet.
+          setPurchaseData({
+            value: data.value,
+            currency: data.currency,
+            eventId: data.eventId,
+            addonIds: data.addonIds,
+          });
+          setPurchasedItems(data.purchasedItems ?? []);
           setStatus("confirmed");
-
-          const pixelReady = await waitForFbq();
-          if (!pixelReady) {
-            // Payment is verified and the server-side CAPI event already went
-            // out — only the browser Pixel leg failed. Don't mark firedKey:
-            // leaving it unset lets a page refresh retry firing (verify is
-            // safe to re-call — the server is idempotent on payment id).
-            console.error(
-              "Meta Pixel (fbq) never became available — browser Purchase event was not sent. " +
-                "The server-side Conversions API event was still sent. This usually means the " +
-                "Pixel script was blocked (ad blocker / browser privacy setting) or failed to load " +
-                "(network issue) — check the Network tab for a blocked request to " +
-                "connect.facebook.net/en_US/fbevents.js."
-            );
-            return;
-          }
-
-          // Same eventID (and the same content_ids/value/currency) as the
-          // server sent to Meta CAPI — matching custom_data plus a shared
-          // eventID is what lets Meta deduplicate the browser + server
-          // events into one, rather than double-counting the purchase.
-          window.fbq!(
-            "track",
-            "Purchase",
-            {
-              value: data.value,
-              currency: data.currency,
-              ...(data.addonIds && data.addonIds.length > 0
-                ? { content_ids: data.addonIds, content_type: "product" }
-                : {}),
-            },
-            { eventID: data.eventId }
-          );
-          localStorage.setItem(firedKey, JSON.stringify({ purchasedItems: items }));
         }
       )
       .catch((err) => {
@@ -170,6 +158,59 @@ export default function ThankYouContent() {
     // Intentionally runs once on mount only — searchParams are read from
     // the URL at that point and this must not re-fire on re-renders.
   }, [searchParams]);
+
+  // Fires the Meta Pixel Purchase event on the WhatsApp CTA click instead of
+  // on page load — the previous "fire as soon as verification succeeds"
+  // approach wasn't being tracked reliably. Still gated on a verified
+  // payment, still fires at most once (localStorage + in-session ref guard),
+  // still never fires for an unverified payment (purchaseData stays null),
+  // and still uses the same eventID as the server-side CAPI call for dedup.
+  const handleWhatsAppClick = () => {
+    const paymentId = searchParams.get("razorpay_payment_id");
+    if (!paymentId || !purchaseData || firingRef.current) return;
+
+    const firedKey = `meta_purchase_fired_${paymentId}`;
+    if (localStorage.getItem(firedKey)) return;
+
+    firingRef.current = true;
+
+    (async () => {
+      const pixelReady = await waitForFbq();
+      if (!pixelReady) {
+        // Payment is verified and the server-side CAPI event already went
+        // out — only the browser Pixel leg failed. Don't mark firedKey:
+        // leaving it unset lets the visitor retry (e.g. re-clicking, or
+        // reloading and clicking again) once the Pixel script is available.
+        console.error(
+          "Meta Pixel (fbq) never became available — browser Purchase event was not sent. " +
+            "The server-side Conversions API event was still sent. This usually means the " +
+            "Pixel script was blocked (ad blocker / browser privacy setting) or failed to load " +
+            "(network issue) — check the Network tab for a blocked request to " +
+            "connect.facebook.net/en_US/fbevents.js."
+        );
+        firingRef.current = false;
+        return;
+      }
+
+      // Same eventID (and the same content_ids/value/currency) as the
+      // server sent to Meta CAPI — matching custom_data plus a shared
+      // eventID is what lets Meta deduplicate the browser + server
+      // events into one, rather than double-counting the purchase.
+      window.fbq!(
+        "track",
+        "Purchase",
+        {
+          value: purchaseData.value,
+          currency: purchaseData.currency,
+          ...(purchaseData.addonIds && purchaseData.addonIds.length > 0
+            ? { content_ids: purchaseData.addonIds, content_type: "product" }
+            : {}),
+        },
+        { eventID: purchaseData.eventId }
+      );
+      localStorage.setItem(firedKey, JSON.stringify({ purchasedItems }));
+    })();
+  };
 
   // Only show the private group link when there's at least payment evidence
   // in the URL (a real Razorpay redirect) — someone who just browsed here
@@ -236,7 +277,7 @@ export default function ThankYouContent() {
                 </span>
               </li>
             </ul>
-            <WhatsAppCta />
+            <WhatsAppCta onClick={handleWhatsAppClick} />
             {status === "unverified" && (
               <p className="ty-status">
                 We couldn&rsquo;t automatically confirm this payment just now — if you were
