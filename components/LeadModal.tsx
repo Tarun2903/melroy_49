@@ -220,7 +220,7 @@ export default function LeadModal() {
         key: data.keyId,
         amount,
         currency,
-        name: "Melroy — 5-Day AI Digital Product Challenge",
+        name: "5-Day AI Digital Product Challenge",
         description: data.description,
         order_id: orderId,
         prefill: {
@@ -257,7 +257,15 @@ export default function LeadModal() {
   async function handlePaymentSuccess(response: RazorpayHandlerResponse) {
     setStep("success");
     setVerifyStatus("pending");
-    dialogRef.current?.showModal();
+
+    // Reopening the dialog is best-effort UI — isolated in its own
+    // try/catch so that if it ever throws (e.g. a dialog state edge case),
+    // verification and the Purchase event below still run regardless.
+    try {
+      dialogRef.current?.showModal();
+    } catch (err) {
+      console.error("Could not reopen dialog for success step:", err);
+    }
 
     try {
       const verifyRes = await fetch("/api/payment/verify-order", {

@@ -48,7 +48,7 @@ async function fetchOrder(
   orderId: string,
   keyId: string,
   keySecret: string
-): Promise<{ amount: number; currency: string; status: string; notes?: Record<string, string> } | null> {
+): Promise<{ amount: number; currency: string; notes?: Record<string, string> } | null> {
   try {
     const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
     const res = await fetch(`https://api.razorpay.com/v1/orders/${orderId}`, {
@@ -97,12 +97,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ verified: false, reason: "Signature invalid" }, { status: 400 });
   }
 
-  // Signature is authentic from here on — this really is a completed
-  // payment against this order. Confirm with Razorpay's own record before
-  // reporting a value/currency, and read back which bumps were purchased.
+  // Signature is authentic from here on — Razorpay only produces a matching
+  // HMAC(order_id|payment_id) for a genuinely completed payment, which is
+  // their own documented way to verify a Checkout.js payment. Fetch the
+  // order purely to read back the authoritative amount/currency/addon
+  // notes — not to re-gate on a `status` field. The order's `status` can
+  // still read "created"/"attempted" for a brief window after the signature
+  // is issued (this lagged for UPI in testing, causing the Purchase event
+  // to silently never fire), so it must not block verification here.
   const order = await fetchOrder(orderId, keyId, keySecret);
-  if (!order || order.status !== "paid") {
-    return NextResponse.json({ verified: false, reason: "Order not confirmed as paid" }, { status: 400 });
+  if (!order) {
+    return NextResponse.json({ verified: false, reason: "Could not confirm order with Razorpay" }, { status: 502 });
   }
 
   const eventId = `purchase_${paymentId}`;
