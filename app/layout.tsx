@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Bricolage_Grotesque, Inter } from "next/font/google";
 import "./globals.css";
 import { META_PIXEL_ID, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/constants";
@@ -72,6 +73,10 @@ export default function RootLayout({
         </noscript>
         <MetaPixel />
         <MicrosoftClarity />
+        {/* Razorpay Checkout.js — opens payment as an in-page popup overlay
+            (components/LeadModal.tsx) instead of redirecting to a hosted
+            Payment Link page. */}
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
         {children}
       </body>
     </html>

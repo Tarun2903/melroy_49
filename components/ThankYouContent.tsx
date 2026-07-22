@@ -3,12 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import WhatsAppCta from "./WhatsAppCta";
-
-declare global {
-  interface Window {
-    fbq?: (...args: unknown[]) => void;
-  }
-}
+import { readCookie, waitForFbq } from "@/lib/metaPixel";
 
 type Status = "checking" | "no-payment-params" | "verifying" | "confirmed" | "unverified";
 
@@ -28,11 +23,6 @@ interface PurchaseData {
   addonIds?: string[];
 }
 
-function readCookie(name: string): string | undefined {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : undefined;
-}
-
 function readStashedLead(): StashedLead {
   try {
     const raw = sessionStorage.getItem("melroy_last_lead");
@@ -40,31 +30,6 @@ function readStashedLead(): StashedLead {
   } catch {
     return {};
   }
-}
-
-/** The Meta Pixel base snippet (components/MetaPixel.tsx) loads with
- * strategy="afterInteractive", so it can still be executing when this page's
- * verify round-trip resolves. Poll briefly for `window.fbq` instead of
- * firing (or silently skipping) immediately — the stub fbq() installs
- * synchronously the moment that script runs, so this only needs to cover a
- * short scheduling gap, not the full async fbevents.js network load. */
-function waitForFbq(timeoutMs = 8000, intervalMs = 100): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (typeof window.fbq === "function") {
-      resolve(true);
-      return;
-    }
-    const start = Date.now();
-    const interval = setInterval(() => {
-      if (typeof window.fbq === "function") {
-        clearInterval(interval);
-        resolve(true);
-      } else if (Date.now() - start >= timeoutMs) {
-        clearInterval(interval);
-        resolve(false);
-      }
-    }, intervalMs);
-  });
 }
 
 export default function ThankYouContent() {

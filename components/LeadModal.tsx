@@ -1,22 +1,46 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BASE_PRICE, ORDER_BUMPS, PAYMENT_LINK } from "@/lib/constants";
+import { BASE_PRICE, ORDER_BUMPS } from "@/lib/constants";
+import { readCookie, waitForFbq } from "@/lib/metaPixel";
+import { waitForRazorpay, type RazorpayHandlerResponse } from "@/lib/razorpayCheckout";
+import WhatsAppCta from "./WhatsAppCta";
 
-type Step = "form" | "bump1" | "bump2";
+type Step = "form" | "bump1" | "bump2" | "success";
+
+interface LeadInfo {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+/** Verified purchase data needed to fire the Meta Pixel Purchase event,
+ * captured from the /api/payment/verify-order response. */
+interface PurchaseData {
+  value?: number;
+  currency?: string;
+  eventId: string;
+  addonIds?: string[];
+  purchasedItems?: string[];
+}
 
 /** Intercepts every `.cta` button click on the page (across all sections)
  * and opens this dialog instead of navigating straight to Razorpay. The
- * flow is: lead details -> one order-bump offer at a time -> checkout.
+ * flow is: lead details -> one order-bump offer at a time -> checkout ->
+ * success — all on this same page, never navigating away.
  *
  * On submitting details, the lead is POSTed to /api/leads (regardless of
  * whether that save succeeds, the flow continues — a lead-pipeline hiccup
  * never blocks a sale). The visitor then sees each order bump one at a
  * time; accepting or declining either one advances to the next step. Once
- * both are answered, a Razorpay Payment Link is created server-side for the
- * exact accepted total (so what they're charged matches what they agreed
- * to) and they're redirected there. If that call fails for any reason, this
- * falls back to the static PAYMENT_LINK so checkout never breaks. */
+ * both are answered, a Razorpay order is created server-side for the exact
+ * accepted total (so what they're charged matches what they agreed to) and
+ * Razorpay Checkout.js opens as an in-page popup against that order — this
+ * dialog closes first so the landing page is what's visible behind it. On a
+ * successful payment, the payment is verified server-side and this dialog
+ * reopens showing a success step instead of redirecting to a Thank You
+ * page. If order creation fails, an inline error is shown so checkout never
+ * silently breaks and the visitor is never sent to a hosted redirect page. */
 export default function LeadModal() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -25,7 +49,16 @@ export default function LeadModal() {
   const [step, setStep] = useState<Step>("form");
   const [selectedBumps, setSelectedBumps] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [leadInfo, setLeadInfo] = useState<LeadInfo | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [purchaseData, setPurchaseData] = useState<PurchaseData | null>(null);
+  const [verifyStatus, setVerifyStatus] = useState<"pending" | "verified" | "unverified">("pending");
+  // Guards against firing the Purchase event twice for the same payment.
+  const firedRef = useRef(false);
+  // Set right before this dialog is closed programmatically to open the
+  // Razorpay popup — see handleDialogClose.
+  const suppressCloseResetRef = useRef(false);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -42,17 +75,20 @@ export default function LeadModal() {
         // Reset every piece of flow state, not just step/selectedBumps —
         // this dialog is a singleton mounted once for the whole page, so
         // its state otherwise survives across separate open/close cycles.
-        // Previously `redirecting`/`submitting` were never reset here: if a
-        // checkout attempt ever set redirecting=true and the redirect
-        // didn't complete in this tab (a failed request, or the browser
-        // restoring this page from back/forward cache after the visitor
-        // hit "back" from Razorpay), every button stayed permanently
-        // disabled for the rest of the session — including "Yes, add this"
-        // on a fresh reopen. That was the reported bug.
+        // Previously `processing`/`submitting` were never reset here: if a
+        // checkout attempt ever set that flag and the flow didn't complete
+        // in this tab, every button stayed permanently disabled for the
+        // rest of the session — including "Yes, add this" on a fresh
+        // reopen. That was the reported bug.
         setStep("form");
         setSelectedBumps([]);
         setSubmitting(false);
-        setRedirecting(false);
+        setProcessing(false);
+        setLeadInfo(null);
+        setCheckoutError(null);
+        setPurchaseData(null);
+        setVerifyStatus("pending");
+        firedRef.current = false;
         formRef.current?.reset();
         dialog.showModal();
         document.getElementById("leadName")?.focus();
@@ -67,12 +103,22 @@ export default function LeadModal() {
   }, []);
 
   // Also reset on close (Escape, backdrop, the X button) so a half-finished
-  // bump sequence never lingers into the next time the dialog opens.
+  // bump sequence never lingers into the next time the dialog opens. This
+  // dialog is also closed programmatically right before Razorpay Checkout's
+  // popup opens (see finalizeCheckout) so the landing page — not this
+  // dialog — is what's visible behind it; suppressCloseResetRef distinguishes
+  // that intentional, momentary close from a visitor actually dismissing the
+  // dialog, so in-flight checkout state survives it.
   function handleDialogClose() {
     lastFocused.current?.focus();
+    if (suppressCloseResetRef.current) {
+      suppressCloseResetRef.current = false;
+      return;
+    }
     setStep("form");
     setSelectedBumps([]);
-    setRedirecting(false);
+    setProcessing(false);
+    setCheckoutError(null);
   }
 
   function handleClose() {
@@ -105,9 +151,9 @@ export default function LeadModal() {
       setSubmitting(false);
     }
 
-    // Stashed so the Thank You page can improve Meta CAPI match quality
-    // (hashed email/phone) after the round trip to Razorpay and back.
-    // Best-effort only — the purchase flow doesn't depend on this.
+    // Stashed so the Thank You page can improve Meta CAPI match quality if
+    // it's ever reached (see app/thank-you) — kept for compatibility, though
+    // the primary flow no longer redirects there. Best-effort only.
     try {
       sessionStorage.setItem(
         "melroy_last_lead",
@@ -116,6 +162,9 @@ export default function LeadModal() {
     } catch {
       // sessionStorage unavailable (private mode, quota) — non-fatal
     }
+
+    // Used for the Razorpay Checkout prefill and the verify-order request.
+    setLeadInfo({ name: leadData.name, email: leadData.email, phone: leadData.phone });
 
     setStep("bump1");
   }
@@ -131,31 +180,166 @@ export default function LeadModal() {
   }
 
   async function finalizeCheckout(addonIds: string[]) {
-    setRedirecting(true);
+    setProcessing(true);
+    setCheckoutError(null);
     try {
-      const res = await fetch("/api/razorpay/create-payment-link", {
+      const res = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ addonIds }),
       });
-      if (res.ok) {
-        const data: { url?: string } = await res.json();
-        if (data.url) {
-          dialogRef.current?.close();
-          window.location.href = data.url;
-          return;
-        }
+      const data: {
+        orderId?: string;
+        amount?: number;
+        currency?: string;
+        keyId?: string;
+        description?: string;
+        error?: string;
+      } = await res.json();
+
+      if (!res.ok || !data.orderId || !data.keyId || !data.amount) {
+        throw new Error(data.error ?? "Could not start checkout. Please try again.");
       }
-      console.warn("Dynamic payment link creation failed — falling back to static PAYMENT_LINK.");
+
+      await waitForRazorpay();
+      const RazorpayCtor = window.Razorpay;
+      if (!RazorpayCtor) {
+        throw new Error("Payment could not load. Please check your connection and try again.");
+      }
+
+      // Close this dialog first so the landing page — not this dialog — is
+      // what's visible behind Razorpay's popup (suppressCloseResetRef stops
+      // the onClose handler from wiping the flow state we still need).
+      suppressCloseResetRef.current = true;
+      dialogRef.current?.close();
+
+      const orderId = data.orderId;
+      const amount = data.amount;
+      const currency = data.currency ?? "INR";
+      const razorpay = new RazorpayCtor({
+        key: data.keyId,
+        amount,
+        currency,
+        name: "Melroy — 5-Day AI Digital Product Challenge",
+        description: data.description,
+        order_id: orderId,
+        prefill: {
+          name: leadInfo?.name,
+          email: leadInfo?.email,
+          contact: leadInfo?.phone,
+        },
+        notes: { addon_ids: addonIds.join(",") },
+        handler: (response: RazorpayHandlerResponse) => {
+          handlePaymentSuccess(response);
+        },
+        modal: {
+          // Visitor closed Razorpay's popup without paying — just clear the
+          // processing flag; they can click a `.cta` button again to retry.
+          ondismiss: () => {
+            setProcessing(false);
+          },
+        },
+      });
+      razorpay.on("payment.failed", () => {
+        // Razorpay's own popup already shows the visitor a failure message.
+        setProcessing(false);
+      });
+      razorpay.open();
     } catch (err) {
-      console.error("Dynamic payment link request failed — falling back to static PAYMENT_LINK:", err);
+      console.error("Checkout could not start:", err);
+      setProcessing(false);
+      setCheckoutError(
+        err instanceof Error ? err.message : "Something went wrong starting checkout. Please try again."
+      );
     }
-    // Only reached on the fallback path (the success path returns above) —
-    // clear the flag before falling back so the buttons aren't left
-    // disabled if this redirect is somehow interrupted too.
-    setRedirecting(false);
-    dialogRef.current?.close();
-    window.location.href = PAYMENT_LINK;
+  }
+
+  async function handlePaymentSuccess(response: RazorpayHandlerResponse) {
+    setStep("success");
+    setVerifyStatus("pending");
+    dialogRef.current?.showModal();
+
+    try {
+      const verifyRes = await fetch("/api/payment/verify-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature,
+          email: leadInfo?.email,
+          phone: leadInfo?.phone,
+          firstName: leadInfo?.name?.split(" ")[0],
+          fbp: readCookie("_fbp"),
+          fbc: readCookie("_fbc"),
+        }),
+      });
+      const data: {
+        verified: boolean;
+        eventId?: string;
+        value?: number;
+        currency?: string;
+        addonIds?: string[];
+        purchasedItems?: string[];
+      } = await verifyRes.json();
+
+      setProcessing(false);
+
+      if (!data.verified || !data.eventId) {
+        console.warn("Payment could not be verified — Purchase event not fired.");
+        setVerifyStatus("unverified");
+        return;
+      }
+
+      setVerifyStatus("verified");
+      setPurchaseData({
+        value: data.value,
+        currency: data.currency,
+        eventId: data.eventId,
+        addonIds: data.addonIds,
+        purchasedItems: data.purchasedItems,
+      });
+
+      // Fire immediately after verification succeeds — never before, never
+      // if verification fails, and only once (firedRef + the same
+      // localStorage key app/thank-you also uses, kept in sync in case that
+      // page is ever reached for this same payment id).
+      if (firedRef.current) return;
+      const firedKey = `meta_purchase_fired_${response.razorpay_payment_id}`;
+      if (localStorage.getItem(firedKey)) return;
+      firedRef.current = true;
+
+      const pixelReady = await waitForFbq();
+      if (!pixelReady) {
+        console.error(
+          "Meta Pixel (fbq) never became available — browser Purchase event was not sent. " +
+            "The server-side Conversions API event was still sent."
+        );
+        return;
+      }
+
+      // Same eventID (and the same content_ids/value/currency) as the
+      // server sent to Meta CAPI — matching custom_data plus a shared
+      // eventID is what lets Meta deduplicate the browser + server events
+      // into one, rather than double-counting the purchase.
+      window.fbq!(
+        "track",
+        "Purchase",
+        {
+          value: data.value,
+          currency: data.currency,
+          ...(data.addonIds && data.addonIds.length > 0
+            ? { content_ids: data.addonIds, content_type: "product" }
+            : {}),
+        },
+        { eventID: data.eventId }
+      );
+      localStorage.setItem(firedKey, JSON.stringify({ purchasedItems: data.purchasedItems ?? [] }));
+    } catch (err) {
+      console.error("Payment verification request failed:", err);
+      setProcessing(false);
+      setVerifyStatus("unverified");
+    }
   }
 
   const [bump1, bump2] = ORDER_BUMPS;
@@ -234,7 +418,7 @@ export default function LeadModal() {
             <button
               type="button"
               className="btn"
-              disabled={redirecting}
+              disabled={processing}
               onClick={() => answerBump(bump1.id, true, bump2 ? "bump2" : null)}
             >
               <span className="label">Yes, add this</span>
@@ -242,7 +426,7 @@ export default function LeadModal() {
             <button
               type="button"
               className="btn btn-ghost"
-              disabled={redirecting}
+              disabled={processing}
               onClick={() => answerBump(bump1.id, false, bump2 ? "bump2" : null)}
             >
               <span className="label">No thanks, continue</span>
@@ -270,22 +454,60 @@ export default function LeadModal() {
             +₹{bump2.price} <span>added to your order today</span>
           </p>
           <p className="bump-total">Your total: ₹{runningTotal}</p>
+          {checkoutError && <p className="bump-desc" style={{ color: "#D64545" }}>{checkoutError}</p>}
           <div className="bump-actions">
             <button
               type="button"
               className="btn"
-              disabled={redirecting}
+              disabled={processing}
               onClick={() => answerBump(bump2.id, true, null)}
             >
-              <span className="label">{redirecting ? "Please wait…" : "Yes, add this"}</span>
+              <span className="label">{processing ? "Please wait…" : "Yes, add this"}</span>
             </button>
             <button
               type="button"
               className="btn btn-ghost"
-              disabled={redirecting}
+              disabled={processing}
               onClick={() => answerBump(bump2.id, false, null)}
             >
-              <span className="label">{redirecting ? "Please wait…" : "No thanks, take me to checkout"}</span>
+              <span className="label">{processing ? "Please wait…" : "No thanks, take me to checkout"}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "success" && (
+        <div className="lead-form">
+          <button type="button" className="lead-close" aria-label="Close" onClick={handleClose}>
+            &times;
+          </button>
+          <div className="ty-icon" aria-hidden="true">
+            ✔
+          </div>
+          <h2 id="leadModalTitle" className="lead-title">
+            Payment Successful
+          </h2>
+          <p className="lead-sub">
+            Thank you for joining the 5-Day AI Digital Product Challenge. Check your email for your
+            payment receipt and challenge details, then join the WhatsApp group below for your Day 1
+            scheduling link.
+          </p>
+          {purchaseData?.purchasedItems && purchaseData.purchasedItems.length > 0 && (
+            <p className="bump-desc">
+              Your order also includes: <b>{purchaseData.purchasedItems.join(", ")}</b>
+            </p>
+          )}
+          {verifyStatus === "unverified" && (
+            <p className="bump-desc">
+              We couldn&rsquo;t automatically confirm this payment just now — if you were charged,
+              you&rsquo;re still all set. Message us in the WhatsApp group below and we&rsquo;ll sort it
+              out.
+            </p>
+          )}
+          <div className="bump-actions">
+            <WhatsAppCta />
+            <button type="button" className="btn btn-ghost" onClick={handleClose}>
+              <span className="label">Close</span>
             </button>
           </div>
         </div>
